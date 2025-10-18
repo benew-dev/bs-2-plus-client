@@ -3,42 +3,25 @@ import { getToken } from "next-auth/jwt";
 import dbConnect from "@/backend/config/dbConnect";
 import Product from "@/backend/models/product";
 import Category from "@/backend/models/category";
+import Type from "@/backend/models/type";
 import APIFilters from "@/backend/utils/APIFilters";
 import { captureException } from "@/monitoring/sentry";
 import { parseProductSearchParams } from "@/utils/inputSanitizer";
 import { validateProductFilters } from "@/helpers/validation/schemas/product";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
 
-// Configuration simple
 const DEFAULT_PER_PAGE = 2;
 const MAX_PER_PAGE = 50;
 
-/**
- * GET /api/products
- * Récupère la liste des produits avec filtres et pagination
- * Rate limit: Configuration intelligente - publicRead (100 req/min) ou authenticatedRead (200 req/min)
- *
- * Headers de sécurité gérés par next.config.mjs pour /api/products/* :
- * - Cache-Control: public, max-age=300, stale-while-revalidate=600
- * - CDN-Cache-Control: max-age=600
- * - X-Content-Type-Options: nosniff
- * - Vary: Accept-Encoding
- *
- * Note: Les produits sont des données publiques avec cache modéré
- * car ils changent plus souvent que les catégories
- */
 export const GET = withIntelligentRateLimit(
   async function (req) {
     try {
-      // Connexion DB
       await dbConnect();
 
-      // Sanitisation des paramètres
       const sanitizedParams = parseProductSearchParams(
         req.nextUrl.searchParams,
       );
 
-      // Validation des paramètres sanitisés
       const validation = await validateProductFilters(sanitizedParams);
       if (!validation.isValid) {
         return NextResponse.json(
@@ -51,7 +34,6 @@ export const GET = withIntelligentRateLimit(
         );
       }
 
-      // Utiliser les données validées
       const validatedParams = validation.data;
       const searchParams = new URLSearchParams();
       Object.entries(validatedParams).forEach(([key, value]) => {
@@ -60,50 +42,97 @@ export const GET = withIntelligentRateLimit(
         }
       });
 
+      // 🆕 Récupérer le type depuis les paramètres
+      const typeParam = searchParams.get("type");
+
+      if (!typeParam) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Type parameter is required (men or women)",
+          },
+          { status: 400 },
+        );
+      }
+
+      // 🆕 Trouver le Type en base (par slug)
+      const typeDoc = await Type.findOne({
+        slug: typeParam.toLowerCase(),
+        isActive: true,
+      });
+
+      if (!typeDoc) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Type not found or inactive",
+          },
+          { status: 404 },
+        );
+      }
+
+      // 🆕 Récupérer les catégories ACTIVES pour ce type
+      const categories = await Category.find({
+        type: typeDoc._id,
+        isActive: true,
+      })
+        .select("categoryName _id")
+        .sort({ categoryName: 1 })
+        .lean();
+
+      // Formater les catégories
+      const formattedCategories = categories.map((cat) => ({
+        _id: cat._id,
+        name: cat.categoryName,
+      }));
+
       // Configuration de la pagination
       const resPerPage = Math.min(MAX_PER_PAGE, Math.max(1, DEFAULT_PER_PAGE));
 
-      // Créer les filtres avec les paramètres validés
+      // Créer les filtres avec le typeId
       const apiFilters = new APIFilters(
-        Product.find({ type: searchParams.get("type"), isActive: true })
-          .select("name description stock price images category")
+        Product.find({ type: typeDoc._id, isActive: true })
+          .select("name description stock price images category type")
           .slice("images", 1),
         searchParams,
       )
         .search()
         .filter();
 
-      // Compter les produits filtrés
       const filteredProductsCount = await apiFilters.query
         .clone()
         .lean()
         .countDocuments();
 
-      // Ajouter la pagination
       apiFilters.pagination(resPerPage);
 
-      // Récupérer les produits
+      // Récupérer les produits avec populate
       const products = await apiFilters.query
         .populate("category", "categoryName")
+        .populate("type", "nom")
         .lean();
 
-      // Calculer les métadonnées
       const totalPages = Math.ceil(filteredProductsCount / resPerPage);
 
-      // Préparer la réponse
+      // 🆕 Réponse avec catégories incluses
       const responseData = {
         success: true,
         data: {
           totalPages,
           totalProducts: filteredProductsCount,
           products: products || [],
+          categories: formattedCategories, // 🆕 Catégories du type
+          type: {
+            _id: typeDoc._id,
+            name: typeDoc.nom,
+            slug: typeDoc.slug,
+          },
         },
       };
 
-      // Headers de cache pour les produits (changent plus souvent que les catégories)
       const cacheHeaders = {
-        "Cache-Control": "public, max-age=300, stale-while-revalidate=600", // 5min cache, 10min stale
-        "CDN-Cache-Control": "max-age=600", // 10min pour CDN si utilisé
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=600",
+        "CDN-Cache-Control": "max-age=600",
       };
 
       return NextResponse.json(responseData, {
@@ -113,7 +142,6 @@ export const GET = withIntelligentRateLimit(
     } catch (error) {
       console.error("Products fetch error:", error.message);
 
-      // Capturer seulement les vraies erreurs système
       if (error.name !== "ValidationError") {
         captureException(error, {
           tags: { component: "api", route: "products/GET" },
@@ -123,7 +151,6 @@ export const GET = withIntelligentRateLimit(
         });
       }
 
-      // Gestion simple des erreurs
       let status = 500;
       let message = "Failed to fetch products";
 

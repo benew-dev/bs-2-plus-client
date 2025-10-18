@@ -2,39 +2,21 @@ import { Suspense, lazy } from "react";
 import ListProductsSkeleton from "@/components/skeletons/ListProductsSkeleton";
 import { parseProductSearchParams } from "@/utils/inputSanitizer";
 
-// Utilisation de lazy au lieu de dynamic pour éviter le conflit de nom
 const ListProducts = lazy(() => import("@/components/products/ListProducts"));
 
-// Ajoutez en haut du fichier
 export const dynamic = "force-dynamic";
-
-// STRATÉGIE DE RENDU : ISR (Incremental Static Regeneration)
-// Parfait pour un e-commerce avec ~500 visiteurs/jour
-export const revalidate = 3600; // Revalidation toutes les heures (3600 secondes)
+export const revalidate = 3600;
 
 export const metadata = {
-  title: "Buy It Now - Votre boutique en ligne",
-  description:
-    "Découvrez notre sélection de produits de qualité à des prix attractifs",
-  openGraph: {
-    title: "Buy It Now - Votre boutique en ligne",
-    description:
-      "Découvrez notre sélection de produits de qualité à des prix attractifs",
-    type: "website",
-    image: "/og-image.jpg", // Cohérent avec head.js
-  },
+  title: "Hommes - Buy It Now",
+  description: "Découvrez notre collection pour hommes",
 };
 
 /**
- * Récupère tous les produits depuis l'API
- * Version optimisée avec ISR pour ~500 visiteurs/jour
- *
- * @param {Object} searchParams - Paramètres de recherche (objet JavaScript)
- * @returns {Promise<Object>} Données des produits ou erreur
+ * 🆕 Une seule méthode qui récupère tout
  */
-const getAllProducts = async (searchParams, type) => {
+const getProductsAndCategories = async (searchParams) => {
   try {
-    // 1. Convertir l'objet searchParams en URLSearchParams
     const urlSearchParams = new URLSearchParams();
 
     if (searchParams) {
@@ -45,167 +27,69 @@ const getAllProducts = async (searchParams, type) => {
       });
     }
 
-    // 2. Parser et nettoyer les paramètres de recherche
-    const cleanParams = parseProductSearchParams(urlSearchParams, type);
+    // 🆕 Ajouter le type dans les paramètres
+    const cleanParams = parseProductSearchParams(urlSearchParams);
+    cleanParams.type = "women"; // Type pour la page hommes
 
-    // 3. Construire la query string
     const searchQuery = new URLSearchParams(cleanParams).toString();
-
-    // 4. Construire l'URL complète de l'API
     const apiUrl = `${
       process.env.API_URL || "https://bs-client-blond.vercel.app"
-    }/api/products${searchQuery ? `?${searchQuery}` : ""}`;
+    }/api/products?${searchQuery}`;
 
-    console.log("Fetching products from:", apiUrl);
+    console.log("Fetching from:", apiUrl);
 
-    // 5. Faire l'appel API avec timeout (5 secondes)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const res = await fetch(apiUrl, {
       signal: controller.signal,
       next: {
-        revalidate: 300, // Cache Next.js de 5 minutes pour les produits
-        tags: ["products"],
+        revalidate: 300,
+        tags: ["products", "men-products"],
       },
     });
 
     clearTimeout(timeoutId);
 
-    // 6. Vérifier le statut HTTP
     if (!res.ok) {
-      if (res.status === 400) {
-        console.error("Bad request - Invalid parameters");
-        return {
-          success: false,
-          message: "Paramètres de requête invalides",
-          data: { products: [], totalPages: 0 },
-        };
-      }
-
-      if (res.status === 404) {
-        return {
-          success: false,
-          message: "Aucun produit trouvé",
-          data: { products: [], totalPages: 0 },
-        };
-      }
-
       console.error(`API Error: ${res.status} - ${res.statusText}`);
       return {
         success: false,
-        message: "Erreur lors de la récupération des produits",
-        data: { products: [], totalPages: 0 },
+        message: "Erreur lors de la récupération des données",
+        data: {
+          products: [],
+          totalPages: 0,
+          categories: [], // 🆕
+        },
       };
     }
 
-    // 7. Parser la réponse JSON
     const responseBody = await res.json();
 
-    // 8. Vérifier la structure de la réponse
     if (!responseBody.success || !responseBody.data) {
       console.error("Invalid API response structure:", responseBody);
       return {
         success: false,
         message: responseBody.message || "Réponse API invalide",
-        data: { products: [], totalPages: 0 },
+        data: {
+          products: [],
+          totalPages: 0,
+          categories: [], // 🆕
+        },
       };
     }
 
-    // 9. Retourner les données avec succès
+    // 🆕 Retourner produits ET catégories
     return {
       success: true,
-      message: "Produits récupérés avec succès",
+      message: "Données récupérées avec succès",
       data: {
         products: responseBody.data.products || [],
         totalPages: responseBody.data.totalPages || 0,
         totalProducts: responseBody.data.totalProducts || 0,
+        categories: responseBody.data.categories || [], // 🆕
+        type: responseBody.data.type, // 🆕
       },
-    };
-  } catch (error) {
-    // 10. Gestion des erreurs réseau/timeout
-    if (error.name === "AbortError") {
-      console.error("Request timeout after 5 seconds");
-      return {
-        success: false,
-        message: "La requête a pris trop de temps",
-        data: { products: [], totalPages: 0 },
-      };
-    }
-
-    console.error("Network error:", error.message);
-    return {
-      success: false,
-      message: "Problème de connexion réseau",
-      data: { products: [], totalPages: 0 },
-    };
-  }
-};
-
-/**
- * Récupère toutes les catégories depuis l'API
- * Version optimisée avec cache long (les catégories changent rarement)
- *
- * @returns {Promise<Object>} Données des catégories ou erreur
- */
-const getCategories = async () => {
-  try {
-    const apiUrl = `${process.env.API_URL || ""}/api/category`;
-
-    console.log("Fetching categories from:", apiUrl);
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const res = await fetch(apiUrl, {
-      signal: controller.signal,
-      next: {
-        revalidate: 1800, // Cache Next.js de 30 minutes (catégories stables)
-        tags: ["categories"],
-      },
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      console.error(`API Error: ${res.status} - ${res.statusText}`);
-
-      if (res.status === 404) {
-        return {
-          success: true,
-          message: "Aucune catégorie disponible",
-          categories: [],
-          count: 0,
-        };
-      }
-
-      return {
-        success: false,
-        message: "Erreur lors de la récupération des catégories",
-        categories: [],
-        count: 0,
-      };
-    }
-
-    const responseBody = await res.json();
-
-    if (!responseBody.success || !responseBody.data) {
-      console.error("Invalid API response structure:", responseBody);
-      return {
-        success: false,
-        message: responseBody.message || "Réponse API invalide",
-        categories: [],
-        count: 0,
-      };
-    }
-
-    const categories = responseBody.data.categories || [];
-
-    return {
-      success: true,
-      message: "Catégories récupérées avec succès",
-      categories: categories,
-      count: responseBody.data.count || categories.length,
     };
   } catch (error) {
     if (error.name === "AbortError") {
@@ -213,8 +97,11 @@ const getCategories = async () => {
       return {
         success: false,
         message: "La requête a pris trop de temps",
-        categories: [],
-        count: 0,
+        data: {
+          products: [],
+          totalPages: 0,
+          categories: [], // 🆕
+        },
       };
     }
 
@@ -222,34 +109,31 @@ const getCategories = async () => {
     return {
       success: false,
       message: "Problème de connexion réseau",
-      categories: [],
-      count: 0,
+      data: {
+        products: [],
+        totalPages: 0,
+        categories: [], // 🆕
+      },
     };
   }
 };
 
-const HomePage = async ({ searchParams }) => {
+const WomenPage = async ({ searchParams }) => {
   const params = await searchParams;
-  // Lance les deux promesses en parallèle
-  const [productsData, categoriesData] = await Promise.all([
-    getAllProducts(params, "women"),
-    getCategories(),
-  ]).catch((err) => {
-    // Gère une erreur si l'une des promesses échoue
-    console.error("Failed to fetch initial data:", err);
-    return [{ data: { products: [], totalPages: 0 } }, { categories: [] }];
-  });
+
+  // 🆕 Une seule requête pour tout
+  const data = await getProductsAndCategories(params);
 
   return (
     <Suspense fallback={<ListProductsSkeleton />}>
       <main>
         <ListProducts
-          data={productsData?.data}
-          categories={categoriesData.categories}
+          data={data?.data}
+          categories={data?.data?.categories || []} // 🆕 Catégories du type men
         />
       </main>
     </Suspense>
   );
 };
 
-export default HomePage;
+export default WomenPage;

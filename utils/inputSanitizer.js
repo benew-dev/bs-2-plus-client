@@ -47,23 +47,31 @@ export const isValidObjectId = (value) => {
  * Parse les paramètres de recherche produits
  * Simple extraction sans sur-sanitisation
  */
-export const parseProductSearchParams = (searchParams, type) => {
+export const parseProductSearchParams = (searchParams, defaultType = null) => {
   const params = {};
-  params.type = type;
 
-  // Keyword - juste un trim
+  // 🆕 Type peut venir des paramètres ou être défini par défaut
+  const type = searchParams.get("type") || defaultType;
+  if (type) {
+    // Valider que c'est men ou women
+    if (["men", "women"].includes(type.toLowerCase())) {
+      params.type = type.toLowerCase();
+    }
+  }
+
+  // Keyword
   const keyword = searchParams.get("keyword");
   if (keyword) {
     params.keyword = cleanString(keyword);
   }
 
-  // Category - vérifier si c'est un ObjectId valide
+  // Category - vérifier ObjectId
   const category = searchParams.get("category");
   if (category && isValidObjectId(category)) {
     params.category = category.trim();
   }
 
-  // Prix min/max - parser en nombre
+  // Prix min/max
   const minPrice = searchParams.get("min") || searchParams.get("price[gt]");
   if (minPrice) {
     const min = parseNumber(minPrice);
@@ -80,7 +88,7 @@ export const parseProductSearchParams = (searchParams, type) => {
     }
   }
 
-  // Page - avec défaut à 1
+  // Page
   const page = parseNumber(searchParams.get("page"), 1);
   params.page = Math.max(1, Math.min(page, 1000));
 
