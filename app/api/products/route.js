@@ -94,7 +94,7 @@ export const GET = withIntelligentRateLimit(
         Product.find({ type: typeDoc._id, isActive: true })
           .select("name description stock price images category")
           .slice("images", 1),
-        searchParams,
+        typeParam,
       )
         .search()
         .filter();
@@ -124,7 +124,6 @@ export const GET = withIntelligentRateLimit(
           type: {
             _id: typeDoc._id,
             name: typeDoc.nom,
-            slug: typeDoc.slug,
           },
         },
       };
