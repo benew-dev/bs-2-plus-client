@@ -31,7 +31,7 @@ const Search = dynamic(() => import("../layouts/Search"), {
   ssr: true,
 });
 
-const ListProducts = ({ data, categories }) => {
+const ListProducts = ({ type, data, categories }) => {
   // États locaux
   const [localLoading, setLocalLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -46,6 +46,13 @@ const ListProducts = ({ data, categories }) => {
   const minPrice = searchParams?.get("min");
   const maxPrice = searchParams?.get("max");
   const page = searchParams?.get("page");
+
+  // Dans ListProducts.jsx, après tes autres useEffect
+  useEffect(() => {
+    // Réinitialiser les états locaux quand les données changent
+    setLocalLoading(false);
+    setShowMobileFilters(false);
+  }, [type]); // ← Se déclenche quand le type change (men → women)
 
   // Construire un message récapitulatif des filtres appliqués
   const getFilterSummary = useCallback(() => {
