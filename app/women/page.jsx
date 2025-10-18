@@ -129,7 +129,7 @@ const WomenPage = async ({ searchParams }) => {
       <main>
         <ListProducts
           key="women_products"
-          type="women"
+          type="Femme"
           data={data?.data}
           categories={data?.data?.categories || []} // 🆕 Catégories du type men
         />

@@ -55,9 +55,11 @@ export const GET = withIntelligentRateLimit(
         );
       }
 
+      const typeRequest = typeParam?.get("type");
+
       // 🆕 Trouver le Type en base (par slug)
       const typeDoc = await Type.findOne({
-        nom: typeParam.get("type").toLowerCase(),
+        nom: typeRequest?.toLowerCase(),
         isActive: true,
       });
 
