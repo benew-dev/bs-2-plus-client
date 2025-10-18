@@ -57,7 +57,7 @@ export const GET = withIntelligentRateLimit(
 
       // 🆕 Trouver le Type en base (par slug)
       const typeDoc = await Type.findOne({
-        slug: typeParam.toLowerCase(),
+        slug: typeParam.get("type").toLowerCase(),
         isActive: true,
       });
 
@@ -92,7 +92,7 @@ export const GET = withIntelligentRateLimit(
       // Créer les filtres avec le typeId
       const apiFilters = new APIFilters(
         Product.find({ type: typeDoc._id, isActive: true })
-          .select("name description stock price images category type")
+          .select("name description stock price images category")
           .slice("images", 1),
         searchParams,
       )
@@ -109,7 +109,6 @@ export const GET = withIntelligentRateLimit(
       // Récupérer les produits avec populate
       const products = await apiFilters.query
         .populate("category", "categoryName")
-        .populate("type", "nom")
         .lean();
 
       const totalPages = Math.ceil(filteredProductsCount / resPerPage);
