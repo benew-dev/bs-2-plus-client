@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { isArrayEmpty } from "@/helpers/helpers";
 import { captureException } from "@/monitoring/sentry";
@@ -38,6 +38,7 @@ const ListProducts = ({ data, categories }) => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Récupérer les paramètres de recherche pour les afficher
   const keyword = searchParams?.get("keyword");
@@ -83,12 +84,12 @@ const ListProducts = ({ data, categories }) => {
   const handleResetFilters = useCallback(() => {
     try {
       setLocalLoading(true);
-      router.push("/");
+      router.push(`${pathname}`);
     } catch (err) {
       console.error(err);
       throw err;
     }
-  }, [router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     if (isInitialLoad) {

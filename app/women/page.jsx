@@ -128,6 +128,7 @@ const WomenPage = async ({ searchParams }) => {
     <Suspense fallback={<ListProductsSkeleton />}>
       <main>
         <ListProducts
+          key="women_products"
           data={data?.data}
           categories={data?.data?.categories || []} // 🆕 Catégories du type men
         />

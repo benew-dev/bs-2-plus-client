@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { getPriceQueryParams, isArrayEmpty } from "@/helpers/helpers";
 
 const Filters = ({ categories, setLocalLoading }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   // État local synchronisé avec les paramètres d'URL
   const [min, setMin] = useState(() => searchParams?.get("min") || "");
@@ -68,7 +69,7 @@ const Filters = ({ categories, setLocalLoading }) => {
         }
 
         // Navigation vers la nouvelle URL
-        const path = `/shop/?${params.toString()}`;
+        const path = `${pathname}?${params.toString()}`;
         setIsSubmitting(false);
         setLocalLoading(false);
         router.push(path);
@@ -79,7 +80,7 @@ const Filters = ({ categories, setLocalLoading }) => {
         setIsSubmitting(false);
       }
     },
-    [searchParams, router, setLocalLoading],
+    [searchParams, router, setLocalLoading, pathname, isSubmitting],
   );
 
   // Gestionnaire pour appliquer les filtres de prix
@@ -100,7 +101,7 @@ const Filters = ({ categories, setLocalLoading }) => {
       params = getPriceQueryParams(params, "max", max);
 
       // Navigation
-      const path = `/shop/?${params.toString()}`;
+      const path = `${pathname}?${params.toString()}`;
       setIsSubmitting(false);
       setLocalLoading(false);
       router.push(path);
@@ -111,7 +112,16 @@ const Filters = ({ categories, setLocalLoading }) => {
       setLocalLoading(false);
       setIsSubmitting(false);
     }
-  }, [min, max, searchParams, validatePrices, router, setLocalLoading]);
+  }, [
+    min,
+    max,
+    searchParams,
+    validatePrices,
+    router,
+    setLocalLoading,
+    pathname,
+    isSubmitting,
+  ]);
 
   // Réinitialiser les filtres
   const resetFilters = useCallback(() => {

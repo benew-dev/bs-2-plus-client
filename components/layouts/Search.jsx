@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { PackageSearch } from "lucide-react";
 
@@ -26,6 +26,7 @@ const Search = ({ setLoading }) => {
   const [keyword, setKeyword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const inputRef = useRef(null);
 
   // Fonction pour modifier le keyword avec validation basique
@@ -57,7 +58,9 @@ const Search = ({ setLoading }) => {
         // await searchSchema.validate({ keyword }, { abortEarly: false });
 
         // Navigation vers la page de résultats
-        router.push(`/shop/?keyword=${encodeURIComponent(keyword.trim())}`);
+        router.push(
+          `${pathname}?keyword=${encodeURIComponent(keyword.trim())}`,
+        );
 
         setLoading?.(false);
         setIsSubmitting(false);
@@ -79,7 +82,7 @@ const Search = ({ setLoading }) => {
         setIsSubmitting(false);
       }
     },
-    [keyword, router, setLoading, isSubmitting],
+    [keyword, router, setLoading, pathname, isSubmitting],
   );
 
   // Soumettre sur appui de la touche Entrée avec debounce
