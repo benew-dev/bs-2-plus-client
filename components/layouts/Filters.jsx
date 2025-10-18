@@ -129,7 +129,7 @@ const Filters = ({ categories, setLocalLoading }) => {
     setLocalLoading(false);
     setMin("");
     setMax("");
-    router.push("/shop");
+    router.push(`${pathname}`);
   }, [router, setLocalLoading]);
 
   // Vérifier si des filtres sont actifs
