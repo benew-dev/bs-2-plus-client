@@ -6,8 +6,8 @@ import Category from "@/backend/models/category";
 import Type from "@/backend/models/type";
 import APIFilters from "@/backend/utils/APIFilters";
 import { captureException } from "@/monitoring/sentry";
-import { parseProductSearchParams } from "@/utils/inputSanitizer";
-import { validateProductFilters } from "@/helpers/validation/schemas/product";
+// import { parseProductSearchParams } from "@/utils/inputSanitizer";
+// import { validateProductFilters } from "@/helpers/validation/schemas/product";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
 
 const DEFAULT_PER_PAGE = 2;
@@ -18,32 +18,32 @@ export const GET = withIntelligentRateLimit(
     try {
       await dbConnect();
 
-      const sanitizedParams = parseProductSearchParams(
-        req.nextUrl.searchParams,
-      );
+      // const sanitizedParams = parseProductSearchParams(
+      //   req.nextUrl.searchParams,
+      // );
 
-      const validation = await validateProductFilters(sanitizedParams);
-      if (!validation.isValid) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Invalid parameters",
-            errors: validation.errors,
-          },
-          { status: 400 },
-        );
-      }
+      // const validation = await validateProductFilters(sanitizedParams);
+      // if (!validation.isValid) {
+      //   return NextResponse.json(
+      //     {
+      //       success: false,
+      //       message: "Invalid parameters",
+      //       errors: validation.errors,
+      //     },
+      //     { status: 400 },
+      //   );
+      // }
 
-      const validatedParams = validation.data;
-      const searchParams = new URLSearchParams();
-      Object.entries(validatedParams).forEach(([key, value]) => {
-        if (value !== null && value !== undefined && value !== "") {
-          searchParams.set(key, value);
-        }
-      });
+      // const validatedParams = validation.data;
+      // const searchParams = new URLSearchParams();
+      // Object.entries(validatedParams).forEach(([key, value]) => {
+      //   if (value !== null && value !== undefined && value !== "") {
+      //     searchParams.set(key, value);
+      //   }
+      // });
 
       // 🆕 Récupérer le type depuis les paramètres
-      const typeParam = searchParams.get("type");
+      const typeParam = req.nextUrl.searchParams;
 
       if (!typeParam) {
         return NextResponse.json(
