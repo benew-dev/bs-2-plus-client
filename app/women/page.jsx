@@ -44,8 +44,8 @@ const getProductsAndCategories = async (searchParams) => {
     const res = await fetch(apiUrl, {
       signal: controller.signal,
       next: {
-        revalidate: 300,
-        tags: ["products", "men-products"],
+        revalidate: 60, // ✅ Réduire à 1 minute
+        tags: ["products", "women-products"], // ✅ Tag différent
       },
     });
 
