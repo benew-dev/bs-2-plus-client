@@ -32,7 +32,7 @@ export const metadata = {
  * @param {Object} searchParams - Paramètres de recherche (objet JavaScript)
  * @returns {Promise<Object>} Données des produits ou erreur
  */
-const getAllProducts = async (searchParams) => {
+const getAllProducts = async (searchParams, type) => {
   try {
     // 1. Convertir l'objet searchParams en URLSearchParams
     const urlSearchParams = new URLSearchParams();
@@ -46,7 +46,7 @@ const getAllProducts = async (searchParams) => {
     }
 
     // 2. Parser et nettoyer les paramètres de recherche
-    const cleanParams = parseProductSearchParams(urlSearchParams);
+    const cleanParams = parseProductSearchParams(urlSearchParams, type);
 
     // 3. Construire la query string
     const searchQuery = new URLSearchParams(cleanParams).toString();
@@ -232,7 +232,7 @@ const HomePage = async ({ searchParams }) => {
   const params = await searchParams;
   // Lance les deux promesses en parallèle
   const [productsData, categoriesData] = await Promise.all([
-    getAllProducts(params),
+    getAllProducts(params, "men"),
     getCategories(),
   ]).catch((err) => {
     // Gère une erreur si l'une des promesses échoue

@@ -8,15 +8,15 @@
  * PAS d'encodage HTML - React le fait automatiquement
  */
 export const cleanString = (value) => {
-  if (!value || typeof value !== 'string') return '';
-  return value.trim().replace(/\s+/g, ' ');
+  if (!value || typeof value !== "string") return "";
+  return value.trim().replace(/\s+/g, " ");
 };
 
 /**
  * Parse un nombre de manière sûre
  */
 export const parseNumber = (value, defaultValue = null) => {
-  if (value === null || value === undefined || value === '') {
+  if (value === null || value === undefined || value === "") {
     return defaultValue;
   }
 
@@ -28,9 +28,9 @@ export const parseNumber = (value, defaultValue = null) => {
  * Parse un booléen
  */
 export const parseBoolean = (value) => {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') {
-    return ['true', 'on', '1', 'yes'].includes(value.toLowerCase().trim());
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    return ["true", "on", "1", "yes"].includes(value.toLowerCase().trim());
   }
   return Boolean(value);
 };
@@ -47,40 +47,41 @@ export const isValidObjectId = (value) => {
  * Parse les paramètres de recherche produits
  * Simple extraction sans sur-sanitisation
  */
-export const parseProductSearchParams = (searchParams) => {
+export const parseProductSearchParams = (searchParams, type) => {
   const params = {};
+  params.type = type;
 
   // Keyword - juste un trim
-  const keyword = searchParams.get('keyword');
+  const keyword = searchParams.get("keyword");
   if (keyword) {
     params.keyword = cleanString(keyword);
   }
 
   // Category - vérifier si c'est un ObjectId valide
-  const category = searchParams.get('category');
+  const category = searchParams.get("category");
   if (category && isValidObjectId(category)) {
     params.category = category.trim();
   }
 
   // Prix min/max - parser en nombre
-  const minPrice = searchParams.get('min') || searchParams.get('price[gt]');
+  const minPrice = searchParams.get("min") || searchParams.get("price[gt]");
   if (minPrice) {
     const min = parseNumber(minPrice);
     if (min !== null && min >= 0) {
-      params['price[gt]'] = min;
+      params["price[gt]"] = min;
     }
   }
 
-  const maxPrice = searchParams.get('max') || searchParams.get('price[lt]');
+  const maxPrice = searchParams.get("max") || searchParams.get("price[lt]");
   if (maxPrice) {
     const max = parseNumber(maxPrice);
     if (max !== null && max >= 0) {
-      params['price[lt]'] = max;
+      params["price[lt]"] = max;
     }
   }
 
   // Page - avec défaut à 1
-  const page = parseNumber(searchParams.get('page'), 1);
+  const page = parseNumber(searchParams.get("page"), 1);
   params.page = Math.max(1, Math.min(page, 1000));
 
   return params;
@@ -93,7 +94,7 @@ export const buildQueryString = (params) => {
   const searchParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
-    if (value !== null && value !== undefined && value !== '') {
+    if (value !== null && value !== undefined && value !== "") {
       searchParams.set(key, value);
     }
   });
@@ -109,7 +110,7 @@ export const cleanFormData = (data) => {
   const cleaned = {};
 
   Object.entries(data).forEach(([key, value]) => {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       cleaned[key] = cleanString(value);
     } else {
       cleaned[key] = value;

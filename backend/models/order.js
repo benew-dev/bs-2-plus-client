@@ -12,13 +12,17 @@ const orderItemSchema = new mongoose.Schema({
     required: [true, "ID du produit obligatoire"],
     ref: "Product",
     index: true,
-    default: null,
   },
   name: {
     type: String,
     required: [true, "Nom du produit obligatoire"],
     trim: true,
     maxlength: [100, "Le nom ne peut pas dépasser 100 caractères"],
+  },
+  type: {
+    type: String,
+    required: [true, "Type obligatoire"],
+    trim: true,
   },
   category: {
     type: String,
@@ -170,7 +174,7 @@ const orderSchema = new mongoose.Schema(
     paymentStatus: {
       type: String,
       enum: {
-        values: ["unpaid", "processing", "paid", "refunded", "failed"],
+        values: ["unpaid", "paid", "refunded", "cancelled"],
         message: "Statut de paiement non valide: {VALUE}",
       },
       default: "unpaid",

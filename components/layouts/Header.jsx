@@ -22,7 +22,8 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production";
 // Liens de navigation
 const NAV_LINKS = [
   { href: "/", label: "Accueil" },
-  { href: "/shop", label: "Boutique" },
+  { href: "/men", label: "Men" },
+  { href: "/women", label: "Women" },
   { href: "/about", label: "À propos" },
   { href: "/contact", label: "Contactez-nous" },
 ];
