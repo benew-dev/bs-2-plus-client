@@ -90,7 +90,7 @@ class APIFilters {
 
   pagination(resPerPage) {
     const currentPage = Number(this.queryStr.get("page")) || 1;
-    const skip = resPerPage * (currentPage - 1);
+    const skip = currentPage > 1 ? resPerPage * (currentPage - 1) : null;
 
     this.query = this.query.limit(resPerPage).skip(skip);
     return this;
