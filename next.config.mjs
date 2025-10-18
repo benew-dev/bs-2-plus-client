@@ -247,11 +247,11 @@ const nextConfig = {
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=300, stale-while-revalidate=600",
+            value: "public, max-age=10, stale-while-revalidate=10",
           },
           {
             key: "CDN-Cache-Control",
-            value: "max-age=600",
+            value: "max-age=10",
           },
           {
             key: "X-Content-Type-Options",
@@ -259,7 +259,7 @@ const nextConfig = {
           },
           {
             key: "Vary",
-            value: "Accept-Encoding",
+            value: "Accept-Encoding, Accept, Cookie",
           },
         ],
       },

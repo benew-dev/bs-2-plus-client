@@ -49,6 +49,8 @@ const ListProducts = ({ type, data, categories }) => {
 
   // Dans ListProducts.jsx, après tes autres useEffect
   useEffect(() => {
+    console.log("🔄 ListProducts remounted with type:", type);
+    console.log("📦 Data received:", data);
     // Réinitialiser les états locaux quand les données changent
     setLocalLoading(false);
     setShowMobileFilters(false);
