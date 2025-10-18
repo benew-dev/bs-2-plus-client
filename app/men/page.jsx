@@ -29,7 +29,7 @@ const getProductsAndCategories = async (searchParams) => {
 
     // 🆕 Ajouter le type dans les paramètres
     const cleanParams = parseProductSearchParams(urlSearchParams);
-    cleanParams.type = "men"; // Type pour la page hommes
+    cleanParams.type = "Homme"; // Type pour la page hommes
 
     const searchQuery = new URLSearchParams(cleanParams).toString();
     const apiUrl = `${
