@@ -59,7 +59,7 @@ export const GET = withIntelligentRateLimit(
 
       // 🆕 Trouver le Type en base (par slug)
       const typeDoc = await Type.findOne({
-        nom: typeRequest?.toLowerCase(),
+        nom: typeRequest,
         isActive: true,
       });
 
