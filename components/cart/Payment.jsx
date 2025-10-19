@@ -91,8 +91,6 @@ const Payment = ({ paymentTypes }) => {
     const initializePaymentPage = async () => {
       try {
         setIsLoading(true);
-        console.log("paymentTypes", paymentTypes);
-        safeSetPaymentTypes(paymentTypes);
 
         // Préparation des éléments de commande
         const orderItems = prepareOrderItems();
@@ -107,6 +105,7 @@ const Payment = ({ paymentTypes }) => {
             position: "bottom-right",
             autoClose: 5000,
           });
+
           return router.push("/cart");
         }
 
@@ -332,6 +331,7 @@ const Payment = ({ paymentTypes }) => {
 
       // Stocker les informations complètes de la commande dans le contexte
       setOrderInfo(finalOrderInfo);
+      safeSetPaymentTypes(paymentTypes);
 
       // Rediriger vers la page de révision au lieu d'envoyer directement
       router.push("/review-order");
