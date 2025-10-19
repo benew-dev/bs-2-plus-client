@@ -6,8 +6,8 @@ import Category from "@/backend/models/category";
 import Type from "@/backend/models/type";
 import APIFilters from "@/backend/utils/APIFilters";
 import { captureException } from "@/monitoring/sentry";
-// import { parseProductSearchParams } from "@/utils/inputSanitizer";
-// import { validateProductFilters } from "@/helpers/validation/schemas/product";
+import { parseProductSearchParams } from "@/utils/inputSanitizer";
+import { validateProductFilters } from "@/helpers/validation/schemas/product";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
 
 const DEFAULT_PER_PAGE = 2;
@@ -18,34 +18,34 @@ export const GET = withIntelligentRateLimit(
     try {
       await dbConnect();
 
-      // const sanitizedParams = parseProductSearchParams(
-      //   req.nextUrl.searchParams,
-      // );
+      const sanitizedParams = parseProductSearchParams(
+        req.nextUrl.searchParams,
+      );
 
-      // const validation = await validateProductFilters(sanitizedParams);
-      // if (!validation.isValid) {
-      //   return NextResponse.json(
-      //     {
-      //       success: false,
-      //       message: "Invalid parameters",
-      //       errors: validation.errors,
-      //     },
-      //     { status: 400 },
-      //   );
-      // }
+      const typeRequest = sanitizedParams.type;
+      delete sanitizedParams.type;
 
-      // const validatedParams = validation.data;
-      // const searchParams = new URLSearchParams();
-      // Object.entries(validatedParams).forEach(([key, value]) => {
-      //   if (value !== null && value !== undefined && value !== "") {
-      //     searchParams.set(key, value);
-      //   }
-      // });
+      const validation = await validateProductFilters(sanitizedParams);
+      if (!validation.isValid) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Invalid parameters",
+            errors: validation.errors,
+          },
+          { status: 400 },
+        );
+      }
 
-      // 🆕 Récupérer le type depuis les paramètres
-      const typeParam = req.nextUrl.searchParams;
+      const validatedParams = validation.data;
+      const searchParams = new URLSearchParams();
+      Object.entries(validatedParams).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+          searchParams.set(key, value);
+        }
+      });
 
-      if (!typeParam) {
+      if (!typeRequest) {
         return NextResponse.json(
           {
             success: false,
@@ -54,8 +54,6 @@ export const GET = withIntelligentRateLimit(
           { status: 400 },
         );
       }
-
-      const typeRequest = typeParam?.get("type");
 
       // 🆕 Trouver le Type en base (par slug)
       const typeDoc = await Type.findOne({
@@ -96,7 +94,7 @@ export const GET = withIntelligentRateLimit(
         Product.find({ type: typeDoc._id, isActive: true })
           .select("name description stock price images category")
           .slice("images", 1),
-        typeParam,
+        searchParams,
       )
         .search()
         .filter();
