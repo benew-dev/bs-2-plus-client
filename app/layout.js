@@ -131,9 +131,7 @@ export default function RootLayout({ children }) {
             <Header />
           </Suspense>
           <main className="flex-grow">{children}</main>
-          <Suspense fallback={null}>
-            <ConditionalFooter />
-          </Suspense>
+          <ConditionalFooter />
         </GlobalProvider>
       </body>
     </html>
