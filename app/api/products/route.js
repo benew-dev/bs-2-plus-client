@@ -22,16 +22,11 @@ export const GET = withIntelligentRateLimit(
         req.nextUrl.searchParams,
       );
 
-      console.log("Sanitized Params: ", sanitizedParams);
-
       const typeRequest = sanitizedParams.type;
       delete sanitizedParams.type;
 
-      console.log("Sanitized Params: ", sanitizedParams);
-
       const validation = await validateProductFilters(sanitizedParams);
       if (!validation.isValid) {
-        console.log("Validation", validation);
         return NextResponse.json(
           {
             success: false,
@@ -42,8 +37,6 @@ export const GET = withIntelligentRateLimit(
         );
       }
 
-      console.log("Validated params", validation);
-
       const validatedParams = validation.data;
       const searchParams = new URLSearchParams();
       Object.entries(validatedParams).forEach(([key, value]) => {
@@ -51,9 +44,6 @@ export const GET = withIntelligentRateLimit(
           searchParams.set(key, value);
         }
       });
-
-      console.log("Search Params that is not object", searchParams);
-      console.log("Type", typeRequest);
 
       if (!typeRequest) {
         return NextResponse.json(
