@@ -157,18 +157,13 @@ export const OrderProvider = ({ children }) => {
         const validationError = new Error(
           "Types de paiement invalides (non-array)",
         );
-        captureClientError(
-          validationError,
-          "OrderContext",
-          "setPaymentTypes",
-          false,
-        );
+        console.log(validationError, "OrderContext", "setPaymentTypes", false);
         setPaymentTypes([]);
         return;
       }
       setPaymentTypes(types);
     } catch (error) {
-      captureClientError(error, "OrderContext", "setPaymentTypes", true);
+      console.log(error, "OrderContext", "setPaymentTypes", true);
       setPaymentTypes([]);
     }
   };
