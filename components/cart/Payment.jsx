@@ -91,6 +91,7 @@ const Payment = ({ paymentTypes }) => {
     const initializePaymentPage = async () => {
       try {
         setIsLoading(true);
+        console.log("paymentTypes", paymentTypes);
         safeSetPaymentTypes(paymentTypes);
 
         // Préparation des éléments de commande
