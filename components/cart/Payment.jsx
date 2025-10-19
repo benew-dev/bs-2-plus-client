@@ -64,7 +64,7 @@ const Payment = ({ paymentTypes }) => {
   // Contextes
   const { cart, cartTotal, cartCount } = useContext(CartContext);
 
-  const { orderInfo, setOrderInfo, safeSetPaymentTypes, error, clearErrors } =
+  const { orderInfo, setOrderInfo, setPaymentTypes, error, clearErrors } =
     useContext(OrderContext);
 
   const router = useRouter();
@@ -331,7 +331,7 @@ const Payment = ({ paymentTypes }) => {
 
       // Stocker les informations complètes de la commande dans le contexte
       setOrderInfo(finalOrderInfo);
-      safeSetPaymentTypes(paymentTypes);
+      setPaymentTypes(paymentTypes);
 
       // Rediriger vers la page de révision au lieu d'envoyer directement
       router.push("/review-order");
