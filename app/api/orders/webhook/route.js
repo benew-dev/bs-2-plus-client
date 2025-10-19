@@ -138,8 +138,9 @@ export const POST = withIntelligentRateLimit(
 
           for (const item of productOrders) {
             const product = await Product.findById(item.productId)
-              .select("name stock price category isActive")
+              .select("name stock price category isActive type")
               .populate("category", "categoryName")
+              .populate("type", "nom")
               .session(session);
 
             if (!product) {
@@ -210,6 +211,10 @@ export const POST = withIntelligentRateLimit(
             );
             if (orderItem && product.category) {
               orderItem.category = product.category.categoryName;
+            }
+            // ✅ NOUVEAU : Ajouter le type
+            if (product.type) {
+              orderItem.type = product.type.nom; // Le champ s'appelle "nom" dans ton modèle Type
             }
 
             processedItems.push({
