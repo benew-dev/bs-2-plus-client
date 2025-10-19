@@ -25,8 +25,11 @@ export const GET = withIntelligentRateLimit(
       const typeRequest = sanitizedParams.type;
       delete sanitizedParams.type;
 
+      console.log("Sanitized Params: ", sanitizedParams);
+
       const validation = await validateProductFilters(sanitizedParams);
       if (!validation.isValid) {
+        console.log("Validation", validation);
         return NextResponse.json(
           {
             success: false,
