@@ -32,6 +32,8 @@ const Confirmation = () => {
     return notFound();
   }
 
+  console.log("Payment Type", paymentTypes);
+
   const breadCrumbs = [
     { name: "Home", url: "/" },
     { name: "Confirmation", url: "" },
