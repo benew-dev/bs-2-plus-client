@@ -40,7 +40,7 @@ export const GET = withIntelligentRateLimit(
         );
       }
 
-      console.log("Validated params", validatedParams);
+      console.log("Validated params", validation);
 
       const validatedParams = validation.data;
       const searchParams = new URLSearchParams();
