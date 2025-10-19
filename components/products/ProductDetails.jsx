@@ -485,7 +485,7 @@ const RelatedProductsCarousel = memo(function RelatedProductsCarousel({
                 }}
               >
                 <Link
-                  href={`/product/${product?._id}`}
+                  href={`/shop/${product?._id}`}
                   className="group/card block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-blue-100 transform hover:-translate-y-1 h-full"
                 >
                   {/* Image du produit */}
