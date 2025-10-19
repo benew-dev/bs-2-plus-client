@@ -90,8 +90,6 @@ export default async function Home() {
   // Récupérer les données de la homepage
   const homePageData = await getHomePageData();
 
-  console.log("Home page data", homePageData);
-
   return (
     <>
       <Hero homePageData={homePageData.data} />
