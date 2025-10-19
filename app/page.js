@@ -16,7 +16,7 @@ const getHomePageData = async () => {
   try {
     // 1. Construire l'URL de l'API
     const apiUrl = `${
-      process.env.API_URL || "https://bs-plus-client.vercel.app"
+      process.env.API_URL || "https://bs-2-plus-client.vercel.app"
     }/api/homepage`;
 
     console.log("Fetching homepage data from:", apiUrl);
@@ -89,6 +89,8 @@ const getHomePageData = async () => {
 export default async function Home() {
   // Récupérer les données de la homepage
   const homePageData = await getHomePageData();
+
+  console.log("Home page data", homePageData);
 
   return (
     <>
