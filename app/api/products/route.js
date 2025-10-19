@@ -22,6 +22,8 @@ export const GET = withIntelligentRateLimit(
         req.nextUrl.searchParams,
       );
 
+      console.log("Sanitized Params: ", sanitizedParams);
+
       const typeRequest = sanitizedParams.type;
       delete sanitizedParams.type;
 
