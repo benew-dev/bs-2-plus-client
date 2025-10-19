@@ -40,6 +40,8 @@ export const GET = withIntelligentRateLimit(
         );
       }
 
+      console.log("Validated params", validatedParams);
+
       const validatedParams = validation.data;
       const searchParams = new URLSearchParams();
       Object.entries(validatedParams).forEach(([key, value]) => {
@@ -47,6 +49,9 @@ export const GET = withIntelligentRateLimit(
           searchParams.set(key, value);
         }
       });
+
+      console.log("Search Params that is not object", searchParams);
+      console.log("Type", typeRequest);
 
       if (!typeRequest) {
         return NextResponse.json(
