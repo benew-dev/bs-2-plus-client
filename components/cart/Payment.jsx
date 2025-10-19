@@ -64,7 +64,7 @@ const Payment = ({ paymentTypes }) => {
   // Contextes
   const { cart, cartTotal, cartCount } = useContext(CartContext);
 
-  const { orderInfo, setOrderInfo, addOrder, error, clearErrors } =
+  const { orderInfo, setOrderInfo, safeSetPaymentTypes, error, clearErrors } =
     useContext(OrderContext);
 
   const router = useRouter();
@@ -91,6 +91,7 @@ const Payment = ({ paymentTypes }) => {
     const initializePaymentPage = async () => {
       try {
         setIsLoading(true);
+        safeSetPaymentTypes(paymentTypes);
 
         // Préparation des éléments de commande
         const orderItems = prepareOrderItems();
