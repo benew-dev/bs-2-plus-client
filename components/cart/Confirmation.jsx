@@ -32,8 +32,6 @@ const Confirmation = () => {
     return notFound();
   }
 
-  console.log("Payment Type", paymentTypes);
-
   const breadCrumbs = [
     { name: "Home", url: "/" },
     { name: "Confirmation", url: "" },
@@ -81,13 +79,11 @@ const Confirmation = () => {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <p className="font-medium text-gray-900 mb-1">
-                          {payment.paymentName}
+                          {payment?.name}
                         </p>
                         <p className="text-sm text-gray-600">
                           Numéro :{" "}
-                          <span className="font-mono">
-                            {payment.paymentNumber}
-                          </span>
+                          <span className="font-mono">{payment?.number}</span>
                         </p>
                       </div>
                     </div>

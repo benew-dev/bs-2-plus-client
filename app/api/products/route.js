@@ -10,7 +10,7 @@ import { parseProductSearchParams } from "@/utils/inputSanitizer";
 import { validateProductFilters } from "@/helpers/validation/schemas/product";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
 
-const DEFAULT_PER_PAGE = 2;
+const DEFAULT_PER_PAGE = 3;
 const MAX_PER_PAGE = 50;
 
 export const GET = withIntelligentRateLimit(
