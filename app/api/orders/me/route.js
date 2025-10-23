@@ -13,6 +13,11 @@ import { getToken } from "next-auth/jwt";
  * Récupère l'historique des commandes de l'utilisateur connecté
  * Rate limit: Configuration intelligente - authenticatedRead (200 req/min)
  *
+ * ✅ ADAPTÉ : Support des paiements CASH
+ * - Compteur des commandes en espèces
+ * - Métadonnées pour indiquer la présence de paiements CASH
+ * - Logging des statistiques CASH
+ *
  * Headers de sécurité gérés par next.config.mjs pour /api/orders/* :
  * - Cache-Control: private, no-cache, no-store, must-revalidate
  * - Pragma: no-cache
@@ -98,6 +103,12 @@ export const GET = withIntelligentRateLimit(
         paymentStatus: "unpaid",
       });
 
+      // ✅ NOUVEAU : Compter les commandes en espèces (CASH)
+      const ordersCashCount = await Order.countDocuments({
+        "user.userId": user._id,
+        "paymentInfo.typePayment": "CASH",
+      });
+
       // Total de toutes les commandes d'un utilisateur (tous statuts confondus)
       const totalAmountOrders = await Order.getTotalAmountByUser(user._id);
 
@@ -115,9 +126,11 @@ export const GET = withIntelligentRateLimit(
               perPage: resPerPage,
               paidCount: 0,
               unpaidCount: 0,
+              cashCount: 0, // ✅ NOUVEAU
               totalAmountOrders: { totalAmount: 0, orderCount: 0 },
               meta: {
                 hasOrders: false,
+                hasCashOrders: false, // ✅ NOUVEAU
                 timestamp: new Date().toISOString(),
               },
             },
@@ -144,11 +157,13 @@ export const GET = withIntelligentRateLimit(
       // Calculer le nombre de pages
       const totalPages = Math.ceil(ordersCount / resPerPage);
 
-      // Log pour audit (sans données sensibles)
+      // Log pour audit (sans données sensibles) - ✅ AMÉLIORÉ avec stats CASH
       console.log("Order history accessed:", {
         userId: user._id,
         userEmail: user.email,
         ordersRetrieved: orders.length,
+        totalOrders: ordersCount,
+        cashOrders: ordersCashCount, // ✅ NOUVEAU
         page,
         timestamp: new Date().toISOString(),
         ip:
@@ -166,8 +181,12 @@ export const GET = withIntelligentRateLimit(
             count: ordersCount,
             paidCount: ordersPaidCount,
             unpaidCount: ordersUnpaidCount,
+            cashCount: ordersCashCount, // ✅ NOUVEAU
             totalAmountOrders,
             perPage: resPerPage,
+            meta: {
+              hasCashOrders: ordersCashCount > 0, // ✅ NOUVEAU : indicateur présence CASH
+            },
           },
         },
         { status: 200 },

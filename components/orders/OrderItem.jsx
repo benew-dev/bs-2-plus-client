@@ -14,7 +14,10 @@ const OrderedProduct = dynamic(() => import("./OrderedProduct"), {
 
 /**
  * Composant d'affichage d'une commande individuelle
- * Adapté au modèle Order avec support CASH
+ * ✅ ADAPTÉ : Support complet du paiement CASH
+ * - Badge CASH dans le header
+ * - Affichage spécialisé pour paiements en espèces
+ * - Message explicatif dans la section expanded
  */
 const OrderItem = memo(({ order }) => {
   const [expanded, setExpanded] = useState(false);
@@ -203,8 +206,8 @@ const OrderItem = memo(({ order }) => {
           </p>
 
           {isCashPayment ? (
-            // Affichage pour paiement CASH
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+            // ✅ Affichage pour paiement CASH
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg mt-2">
               <p className="text-sm text-emerald-700 font-medium mb-1">
                 Paiement à la livraison
               </p>
@@ -250,6 +253,33 @@ const OrderItem = memo(({ order }) => {
       {expanded && (
         <>
           <hr className="my-4" />
+
+          {/* ✅ NOUVEAU : Message explicatif pour paiement CASH */}
+          {isCashPayment && (
+            <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-emerald-100 rounded-full">
+                  <HandCoins className="text-emerald-600" size={20} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-emerald-900 mb-1">
+                    Paiement en espèces à la livraison
+                  </p>
+                  <p className="text-sm text-emerald-700">
+                    Le montant de{" "}
+                    <span className="font-bold">${totalAmount.toFixed(2)}</span>{" "}
+                    sera à régler en espèces au moment de la réception de votre
+                    commande.
+                  </p>
+                  {order.paymentInfo?.cashPaymentNote && (
+                    <p className="text-xs text-emerald-600 mt-2 italic">
+                      {order.paymentInfo.cashPaymentNote}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Timeline des dates importantes */}
           {(order.paidAt || order.cancelledAt || order.updatedAt) && (

@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, HandCoins } from "lucide-react";
 import captureClientError from "@/monitoring/sentry";
 
 // Chargement dynamique des composants
@@ -44,7 +44,10 @@ const OrderItemSkeleton = () => (
 
 /**
  * Composant d'affichage de la liste des commandes
- * Adapté au modèle Order sans orderStatus ni shippingInfo
+ * ✅ ADAPTÉ : Support complet du paiement CASH
+ * - Filtre spécifique pour commandes CASH
+ * - Badge statistique CASH
+ * - Affichage du compteur cashCount
  */
 const ListOrders = ({ orders }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -74,14 +77,14 @@ const ListOrders = ({ orders }) => {
       : 1;
   }, [orders]);
 
-  // Filtrage et tri des commandes - ADAPTÉ AU NOUVEAU MODÈLE
+  // ✅ AMÉLIORÉ : Filtrage avec support CASH
   const filteredAndSortedOrders = useMemo(() => {
     try {
       if (!hasOrders) return [];
 
       let filtered = [...orders.orders];
 
-      // Filtrage par statut de paiement uniquement
+      // Filtrage par statut de paiement ou type
       if (filterStatus !== "all") {
         filtered = filtered.filter((order) => {
           if (filterStatus === "paid") return order.paymentStatus === "paid";
@@ -94,6 +97,14 @@ const ListOrders = ({ orders }) => {
           if (filterStatus === "failed")
             return order.paymentStatus === "failed";
           if (filterStatus === "cancelled") return !!order.cancelledAt;
+
+          // ✅ NOUVEAU : Filtre pour commandes en espèces
+          if (filterStatus === "cash")
+            return (
+              order.paymentInfo?.typePayment === "CASH" ||
+              order.paymentInfo?.isCashPayment === true
+            );
+
           return true;
         });
       }
@@ -180,7 +191,7 @@ const ListOrders = ({ orders }) => {
           Historique de vos commandes
         </h2>
 
-        {/* Filtres et tri - ADAPTÉ AU NOUVEAU MODÈLE */}
+        {/* ✅ AMÉLIORÉ : Filtres avec option CASH */}
         {hasOrders && (
           <div className="flex gap-2 flex-wrap">
             <select
@@ -195,6 +206,7 @@ const ListOrders = ({ orders }) => {
               <option value="refunded">Remboursées</option>
               <option value="failed">Échouées</option>
               <option value="cancelled">Annulées</option>
+              <option value="cash">💰 Paiement espèces</option>
             </select>
 
             <select
@@ -209,9 +221,9 @@ const ListOrders = ({ orders }) => {
         )}
       </div>
 
-      {/* Statistiques */}
+      {/* ✅ AMÉLIORÉ : Statistiques avec badge CASH */}
       {hasOrders && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           <div className="bg-gray-50 p-3 rounded-md">
             <p className="text-sm text-gray-600">Total commandes</p>
             <p className="text-xl font-bold text-gray-900">{orders.count}</p>
@@ -228,6 +240,18 @@ const ListOrders = ({ orders }) => {
               {orders.unpaidCount}
             </p>
           </div>
+
+          {/* ✅ NOUVEAU : Badge statistique pour paiements CASH */}
+          <div className="bg-emerald-50 p-3 rounded-md">
+            <p className="text-sm text-emerald-600 flex items-center gap-1">
+              <HandCoins size={14} />
+              Espèces
+            </p>
+            <p className="text-xl font-bold text-emerald-900">
+              {orders.cashCount || 0}
+            </p>
+          </div>
+
           <div className="bg-purple-50 p-3 rounded-md">
             <p className="text-sm text-purple-600">Montant total</p>
             <p className="text-xl font-bold text-purple-900">
@@ -246,7 +270,7 @@ const ListOrders = ({ orders }) => {
       ) : !hasOrders ? (
         <div className="flex flex-col items-center p-8 bg-gray-50 rounded-lg border border-gray-200">
           <div className="w-16 h-16 flex items-center justify-center rounded-full bg-blue-100 mb-4">
-            <ShoppingBag />
+            <ShoppingBag size={32} className="text-blue-600" />
           </div>
           <h3 className="font-semibold text-lg mb-2">Aucune commande</h3>
           <p className="text-gray-600 text-center mb-4">
