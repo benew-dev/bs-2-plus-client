@@ -15,10 +15,6 @@ const paymentTypeSchema = new mongoose.Schema({
       // Nom requis seulement si ce n'est pas CASH
       return this.platform !== "CASH";
     },
-    enum: {
-      values: ["WAAFI", "D-MONEY", "CAC-PAY", "BCI-PAY"],
-      message: "Type de paiement non supporté: {VALUE}",
-    },
   },
   paymentNumber: {
     type: String,
