@@ -59,8 +59,11 @@ export const GET = withIntelligentRateLimit(
       // Formater les plateformes pour optimiser la réponse
       const formattedPaymentPlatforms = paymentPlatforms.map((payment) => ({
         _id: payment._id,
+        platform: payment.platform, // Ajout du champ platform pour identifier CASH
         name: payment.paymentName,
         number: payment.paymentNumber,
+        isCashPayment: payment.isCashPayment,
+        description: payment.description,
       }));
 
       // Calculer un hash simple pour l'ETag (optionnel)

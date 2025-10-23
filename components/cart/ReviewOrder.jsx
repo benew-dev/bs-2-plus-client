@@ -20,6 +20,7 @@ import {
   LoaderCircle,
   Package,
   Info,
+  HandCoins,
 } from "lucide-react";
 
 // Helpers
@@ -138,6 +139,11 @@ const ReviewOrder = () => {
     return null;
   }
 
+  // Extraire les informations de paiement
+  const { typePayment, paymentAccountName, paymentAccountNumber } =
+    orderInfo.paymentInfo;
+  const isCashPayment = typePayment === "CASH";
+
   return (
     <div className="min-h-screen bg-gray-50">
       <BreadCrumbs breadCrumbs={breadCrumbs} />
@@ -229,25 +235,58 @@ const ReviewOrder = () => {
 
                 <div className="space-y-3">
                   <div className="flex justify-between py-2">
-                    <span className="text-gray-600">Moyen de paiement:</span>
-                    <span className="font-medium text-gray-800">
-                      {orderInfo.paymentInfo.typePayment}
+                    <span className="text-gray-600">Méthode:</span>
+                    <span
+                      className={`font-medium px-3 py-1 rounded-full text-sm ${
+                        isCashPayment
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}
+                    >
+                      {isCashPayment ? "Paiement en espèces" : typePayment}
                     </span>
                   </div>
-                  <div className="flex justify-between py-2">
-                    <span className="text-gray-600">Nom du compte:</span>
-                    <span className="font-medium text-gray-800">
-                      {orderInfo.paymentInfo.paymentAccountName}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-2">
-                    <span className="text-gray-600">Numéro de compte:</span>
-                    <span className="font-medium text-gray-800">
-                      {orderInfo.paymentInfo.paymentAccountNumber.slice(0, 2)}
-                      ••••••
-                      {orderInfo.paymentInfo.paymentAccountNumber.slice(-4)}
-                    </span>
-                  </div>
+
+                  {isCashPayment ? (
+                    <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <HandCoins
+                          className="text-emerald-600 flex-shrink-0"
+                          size={20}
+                        />
+                        <div>
+                          <p className="font-medium text-emerald-900 mb-1">
+                            Paiement à la livraison
+                          </p>
+                          <p className="text-sm text-emerald-700">
+                            Le montant de{" "}
+                            <span className="font-bold">
+                              {formatPrice(totalAmount)}
+                            </span>{" "}
+                            sera à régler en espèces au moment de la réception
+                            de votre commande.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between py-2">
+                        <span className="text-gray-600">Nom du compte:</span>
+                        <span className="font-medium text-gray-800">
+                          {paymentAccountName}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-2">
+                        <span className="text-gray-600">Numéro de compte:</span>
+                        <span className="font-medium text-gray-800">
+                          {paymentAccountNumber.slice(0, 2)}
+                          ••••••
+                          {paymentAccountNumber.slice(-4)}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

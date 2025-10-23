@@ -113,11 +113,38 @@ export const POST = withIntelligentRateLimit(
       // Validation du paiement
       const { typePayment, paymentAccountNumber, paymentAccountName } =
         orderData.paymentInfo || {};
-      if (!typePayment || !paymentAccountNumber || !paymentAccountName) {
+
+      // Validation adaptée selon le type de paiement
+      if (!typePayment) {
         return NextResponse.json(
-          { success: false, message: "Incomplete payment information" },
+          {
+            success: false,
+            message: "Type de paiement requis",
+            code: "MISSING_PAYMENT_TYPE",
+          },
           { status: 400 },
         );
+      }
+
+      // Pour les paiements non-cash, vérifier les infos de compte
+      if (typePayment !== "CASH") {
+        if (!paymentAccountNumber || !paymentAccountName) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Informations de compte incomplètes",
+              code: "INCOMPLETE_PAYMENT_INFO",
+            },
+            { status: 400 },
+          );
+        }
+      } else {
+        // Pour les paiements cash, définir des valeurs par défaut
+        orderData.paymentInfo.paymentAccountNumber = "N/A";
+        orderData.paymentInfo.paymentAccountName = "Paiement en espèces";
+        orderData.paymentInfo.isCashPayment = true;
+        orderData.paymentInfo.cashPaymentNote =
+          "Le paiement sera effectué en espèces à la livraison";
       }
 
       // 5. Vérifier le stock et traiter la commande en transaction
