@@ -2,7 +2,7 @@
 
 import { memo, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, HandCoins, CreditCard } from "lucide-react";
 
 // Chargement dynamique des composants
 const OrderedProduct = dynamic(() => import("./OrderedProduct"), {
@@ -14,7 +14,7 @@ const OrderedProduct = dynamic(() => import("./OrderedProduct"), {
 
 /**
  * Composant d'affichage d'une commande individuelle
- * Adapté au modèle Order sans orderStatus, shippingInfo, taxAmount, shippingAmount
+ * Adapté au modèle Order avec support CASH
  */
 const OrderItem = memo(({ order }) => {
   const [expanded, setExpanded] = useState(false);
@@ -62,6 +62,11 @@ const OrderItem = memo(({ order }) => {
   const paymentStatus = order.paymentStatus || "unpaid";
   const isCancelled = !!order.cancelledAt;
 
+  // ✅ NOUVEAU : Détecter si c'est un paiement CASH
+  const isCashPayment =
+    order.paymentInfo?.isCashPayment ||
+    order.paymentInfo?.typePayment === "CASH";
+
   // Utilisation du totalAmount du modèle
   const totalAmount = order.totalAmount || 0;
 
@@ -106,7 +111,7 @@ const OrderItem = memo(({ order }) => {
                 expanded ? "Réduire les détails" : "Voir plus de détails"
               }
             >
-              {expanded ? <ChevronUp /> : <ChevronDown />}
+              {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
           </div>
 
@@ -116,6 +121,14 @@ const OrderItem = memo(({ order }) => {
             >
               {paymentStatus.toUpperCase()}
             </span>
+
+            {/* ✅ NOUVEAU : Badge spécial pour paiement CASH */}
+            {isCashPayment && (
+              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                <HandCoins size={12} />
+                ESPÈCES
+              </span>
+            )}
 
             {isCancelled && (
               <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
@@ -173,38 +186,64 @@ const OrderItem = memo(({ order }) => {
           </ul>
         </div>
 
+        {/* ✅ AMÉLIORÉ : Affichage conditionnel selon le type de paiement */}
         <div>
-          <p className="text-gray-600 mb-1 font-medium text-sm">
-            Information de paiement
+          <p className="text-gray-600 mb-1 font-medium text-sm flex items-center gap-1">
+            {isCashPayment ? (
+              <>
+                <HandCoins size={14} className="text-emerald-600" />
+                Paiement en espèces
+              </>
+            ) : (
+              <>
+                <CreditCard size={14} className="text-blue-600" />
+                Information de paiement
+              </>
+            )}
           </p>
-          <ul className="text-gray-700 text-sm space-y-1">
-            <li>
-              <span className="text-gray-600">Mode:</span>{" "}
-              <span className="font-medium">
-                {order.paymentInfo?.typePayment || "-"}
-              </span>
-            </li>
-            <li>
-              <span className="text-gray-600">Nom:</span>{" "}
-              <span className="font-medium">
-                {order.paymentInfo?.paymentAccountName || "-"}
-              </span>
-            </li>
-            <li>
-              <span className="text-gray-600">Numéro:</span>{" "}
-              <span className="font-mono text-xs">
-                {order.paymentInfo?.paymentAccountNumber || "••••••••"}
-              </span>
-            </li>
-            {order.paymentInfo?.paymentDate && (
+
+          {isCashPayment ? (
+            // Affichage pour paiement CASH
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <p className="text-sm text-emerald-700 font-medium mb-1">
+                Paiement à la livraison
+              </p>
+              <p className="text-xs text-emerald-600">
+                {order.paymentInfo?.cashPaymentNote ||
+                  "Le paiement sera effectué en espèces à la livraison"}
+              </p>
+            </div>
+          ) : (
+            // Affichage pour paiements électroniques
+            <ul className="text-gray-700 text-sm space-y-1">
               <li>
-                <span className="text-gray-600">Date paiement:</span>{" "}
-                <span className="text-xs">
-                  {formatDate(order.paymentInfo.paymentDate, "short")}
+                <span className="text-gray-600">Mode:</span>{" "}
+                <span className="font-medium">
+                  {order.paymentInfo?.typePayment || "-"}
                 </span>
               </li>
-            )}
-          </ul>
+              <li>
+                <span className="text-gray-600">Nom:</span>{" "}
+                <span className="font-medium">
+                  {order.paymentInfo?.paymentAccountName || "-"}
+                </span>
+              </li>
+              <li>
+                <span className="text-gray-600">Numéro:</span>{" "}
+                <span className="font-mono text-xs">
+                  {order.paymentInfo?.paymentAccountNumber || "••••••••"}
+                </span>
+              </li>
+              {order.paymentInfo?.paymentDate && (
+                <li>
+                  <span className="text-gray-600">Date paiement:</span>{" "}
+                  <span className="text-xs">
+                    {formatDate(order.paymentInfo.paymentDate, "short")}
+                  </span>
+                </li>
+              )}
+            </ul>
+          )}
         </div>
       </div>
 
