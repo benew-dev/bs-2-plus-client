@@ -5,7 +5,6 @@ import Product from "@/backend/models/product";
 import Category from "@/backend/models/category";
 import { captureException } from "@/monitoring/sentry";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
-import isAuthenticatedUser from "@/backend/middlewares/auth";
 
 /**
  * GET /api/products/[id]
