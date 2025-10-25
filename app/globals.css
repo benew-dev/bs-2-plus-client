@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
-/* Configuration du thème Sunset Vibes avec gradients */
+/* ============================================
+   🎨 CONFIGURATION DU THÈME SUNSET VIBES
+   Version Équilibrée et Professionnelle
+   ============================================ */
+
 @theme {
-  /* Couleurs de base - conservées */
+  /* ========== COULEURS DE BASE ========== */
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
   --color-gray-200: #e5e7eb;
@@ -14,7 +18,7 @@
   --color-gray-800: #1f2937;
   --color-gray-900: #111827;
 
-  /* Palette Sunset Vibes - Orange */
+  /* ========== PALETTE SUNSET - ORANGE ========== */
   --color-orange-50: #fff7ed;
   --color-orange-100: #ffedd5;
   --color-orange-200: #fed7aa;
@@ -26,7 +30,7 @@
   --color-orange-800: #9a3412;
   --color-orange-900: #7c2d12;
 
-  /* Palette Sunset Vibes - Rose/Pink */
+  /* ========== PALETTE SUNSET - ROSE/PINK ========== */
   --color-pink-50: #fdf2f8;
   --color-pink-100: #fce7f3;
   --color-pink-200: #fbcfe8;
@@ -38,7 +42,7 @@
   --color-pink-800: #9f1239;
   --color-pink-900: #831843;
 
-  /* Palette Sunset Vibes - Violet/Purple */
+  /* ========== PALETTE SUNSET - VIOLET/PURPLE ========== */
   --color-purple-50: #faf5ff;
   --color-purple-100: #f3e8ff;
   --color-purple-200: #e9d5ff;
@@ -50,7 +54,7 @@
   --color-purple-800: #6b21a8;
   --color-purple-900: #581c87;
 
-  /* Couleurs système - adaptées au thème */
+  /* ========== COULEURS SYSTÈME ========== */
   --color-red-50: #fef2f2;
   --color-red-100: #fee2e2;
   --color-red-500: #ef4444;
@@ -68,7 +72,7 @@
   --color-white: #ffffff;
   --color-black: #000000;
 
-  /* BREAKPOINTS STANDARDS */
+  /* ========== BREAKPOINTS STANDARDS ========== */
   --breakpoint-sm: 40rem;
   --breakpoint-md: 48rem;
   --breakpoint-lg: 64rem;
@@ -76,7 +80,10 @@
   --breakpoint-2xl: 96rem;
 }
 
-/* Styles de base */
+/* ============================================
+   📐 STYLES DE BASE
+   ============================================ */
+
 @layer base {
   *,
   ::after,
@@ -86,16 +93,20 @@
     border-color: var(--color-gray-200, currentColor);
   }
 
-  /* Background gradient par défaut pour le body */
+  /* Background simple et clair */
   body {
-    background: linear-gradient(135deg, #fff7ed 0%, #fdf2f8 50%, #faf5ff 100%);
-    background-attachment: fixed;
+    background: #ffffff;
+    color: var(--color-gray-900);
   }
 }
 
-/* Utilities personnalisées pour les gradients Sunset */
+/* ============================================
+   🎯 UTILITIES PERSONNALISÉES
+   Approche Minimaliste et Équilibrée
+   ============================================ */
+
 @layer utilities {
-  /* Gradient principal Sunset */
+  /* ========== GRADIENT PRINCIPAL (CTA uniquement) ========== */
   .bg-gradient-sunset {
     background: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #a855f7 100%);
   }
@@ -104,77 +115,102 @@
     background: linear-gradient(135deg, #ea580c 0%, #db2777 50%, #9333ea 100%);
   }
 
-  /* Gradient inversé */
-  .bg-gradient-sunset-reverse {
-    background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f97316 100%);
+  /* ========== BACKGROUNDS SUBTILS (Sections) ========== */
+  .bg-sunset-light {
+    background: linear-gradient(135deg, #fff7ed 0%, #fdf2f8 100%);
   }
 
-  /* Gradient doux (pour les backgrounds) */
-  .bg-gradient-sunset-soft {
-    background: linear-gradient(135deg, #ffedd5 0%, #fce7f3 50%, #f3e8ff 100%);
+  .bg-sunset-soft {
+    background: linear-gradient(to right, #fff7ed, #ffffff, #fdf2f8);
   }
 
-  /* Gradient très doux (pour sections) */
-  .bg-gradient-sunset-lighter {
-    background: linear-gradient(135deg, #fff7ed 0%, #fdf2f8 50%, #faf5ff 100%);
+  /* ========== TEXT ACCENTS (Titres uniquement) ========== */
+  .text-sunset {
+    color: #f97316;
   }
 
-  /* Text gradient */
   .text-gradient-sunset {
-    background: linear-gradient(135deg, #f97316 0%, #ec4899 50%, #a855f7 100%);
+    background: linear-gradient(135deg, #f97316 0%, #ec4899 70%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  /* Border gradient */
-  .border-gradient-sunset {
-    border: 2px solid transparent;
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
-    background-image:
-      linear-gradient(white, white),
-      linear-gradient(135deg, #f97316 0%, #ec4899 50%, #a855f7 100%);
+  /* ========== BORDERS SUBTILES ========== */
+  .border-sunset {
+    border-color: #fed7aa;
   }
 
-  /* Shadow avec couleur sunset */
+  .border-sunset-accent {
+    border-color: #f97316;
+  }
+
+  /* ========== SHADOWS ÉLÉGANTES ========== */
   .shadow-sunset {
     box-shadow:
-      0 10px 25px -5px rgba(249, 115, 22, 0.2),
-      0 8px 10px -6px rgba(236, 72, 153, 0.2);
+      0 4px 6px -1px rgba(249, 115, 22, 0.1),
+      0 2px 4px -1px rgba(236, 72, 153, 0.06);
+  }
+
+  .shadow-sunset-md {
+    box-shadow:
+      0 10px 15px -3px rgba(249, 115, 22, 0.1),
+      0 4px 6px -2px rgba(236, 72, 153, 0.05);
   }
 
   .shadow-sunset-lg {
     box-shadow:
-      0 20px 40px -10px rgba(249, 115, 22, 0.3),
-      0 15px 20px -10px rgba(236, 72, 153, 0.3);
+      0 20px 25px -5px rgba(249, 115, 22, 0.1),
+      0 10px 10px -5px rgba(236, 72, 153, 0.04);
   }
 
-  /* Glow effect */
-  .glow-sunset {
-    box-shadow:
-      0 0 20px rgba(249, 115, 22, 0.4),
-      0 0 40px rgba(236, 72, 153, 0.3),
-      0 0 60px rgba(168, 85, 247, 0.2);
+  /* ========== HOVER EFFECTS ========== */
+  .hover-lift {
+    transition: all 0.3s ease;
   }
 
-  /* Animation de pulse avec gradient */
-  .animate-pulse-sunset {
-    animation: pulse-sunset 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .hover-lift:hover {
+    transform: translateY(-2px);
   }
 
-  @keyframes pulse-sunset {
+  /* ========== ACCENT COLORS (Pour petits éléments) ========== */
+  .accent-orange {
+    color: #f97316;
+  }
+
+  .accent-pink {
+    color: #ec4899;
+  }
+
+  .accent-purple {
+    color: #a855f7;
+  }
+
+  /* ========== RINGS DE FOCUS (Accessibilité) ========== */
+  .ring-sunset {
+    --tw-ring-color: rgba(249, 115, 22, 0.5);
+  }
+
+  /* ========== ANIMATIONS SUBTILES ========== */
+  .pulse-subtle {
+    animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-subtle {
     0%,
     100% {
-      box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+      opacity: 1;
     }
     50% {
-      box-shadow: 0 0 40px rgba(236, 72, 153, 0.6);
+      opacity: 0.85;
     }
   }
 }
 
-/* Accessibilité */
+/* ============================================
+   ♿ ACCESSIBILITÉ
+   ============================================ */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -186,7 +222,10 @@
   }
 }
 
-/* Scrollbar stylisée */
+/* ============================================
+   📱 SCROLLBAR STYLISÉE (Mobile)
+   ============================================ */
+
 @media (max-width: 640px) {
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
@@ -197,7 +236,10 @@
   }
 }
 
-/* Container utility */
+/* ============================================
+   📦 CONTAINER UTILITY
+   ============================================ */
+
 @utility container {
   width: 100%;
   margin-right: auto;

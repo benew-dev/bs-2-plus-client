@@ -55,12 +55,12 @@ const UserDropdown = memo(({ user, handleSignOut }) => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1 rounded-full hover:ring-2 hover:ring-pink-400 transition-all"
+        className="p-1 rounded-full hover:ring-2 hover:ring-orange-400 transition-all"
         aria-label="Menu utilisateur"
         aria-expanded={isOpen}
         title="Menu utilisateur"
       >
-        <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-gradient-sunset">
+        <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-orange-500">
           <Image
             alt={`Photo de profil de ${user?.name || "utilisateur"}`}
             src={
@@ -77,14 +77,14 @@ const UserDropdown = memo(({ user, handleSignOut }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-sunset border border-orange-100 z-50">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-sunset-lg border border-gray-200 z-50">
           <div className="py-1">
             {menuItems.map((item, index) => (
               <Link
                 key={`menu-item-${index}`}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gradient-sunset-soft hover:text-orange-700 transition-colors"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
               >
                 {item.label}
               </Link>
@@ -235,7 +235,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white py-2 border-b border-orange-100 sticky top-0 z-50 shadow-sm">
+    <header className="bg-white py-2 border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="container max-w-[1440px] mx-auto px-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -258,16 +258,17 @@ const Header = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-gray-700 hover:text-transparent hover:bg-gradient-sunset hover:bg-clip-text transition-all text-sm font-medium"
+                className="text-gray-700 hover:text-orange-600 transition-colors text-sm font-medium relative group"
               >
                 {link.label}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-sunset group-hover:w-full transition-all duration-300"></span>
               </Link>
             ))}
           </nav>
 
           {/* Icons Desktop + Mobile */}
           <div className="flex items-center gap-3">
-            {/* Icône Panier avec gradient */}
+            {/* Icône Panier */}
             <Link
               href="/cart"
               className="relative p-2 text-gray-700 hover:text-orange-600 transition-colors group"
@@ -276,7 +277,7 @@ const Header = () => {
             >
               <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gradient-sunset text-white rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center text-xs font-medium shadow-sunset animate-pulse-sunset">
+                <span className="absolute -top-1 -right-1 bg-gradient-sunset text-white rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center text-xs font-medium shadow-sunset-md">
                   {cartCount}
                 </span>
               )}
@@ -292,7 +293,7 @@ const Header = () => {
               >
                 <Heart className="w-6 h-6 group-hover:scale-110 group-hover:fill-pink-600 transition-all" />
                 {user?.favorites?.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-sunset text-white rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center text-xs font-medium shadow-sunset">
+                  <span className="absolute -top-1 -right-1 bg-pink-500 text-white rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center text-xs font-medium shadow-md">
                     {user.favorites.length}
                   </span>
                 )}
@@ -335,7 +336,7 @@ const Header = () => {
         {mobileMenuOpen && (
           <div
             id="mobile-menu"
-            className="md:hidden mt-4 border-t border-orange-100 pt-4 pb-2 bg-gradient-sunset-soft rounded-lg"
+            className="md:hidden mt-4 border-t border-gray-200 pt-4 pb-2 bg-gray-50 rounded-lg"
             role="dialog"
             aria-modal="true"
             aria-label="Menu principal"
@@ -346,7 +347,7 @@ const Header = () => {
                   key={link.href}
                   href={link.href}
                   onClick={closeMobileMenu}
-                  className="block px-4 py-3 text-gray-700 hover:bg-white hover:text-gradient-sunset rounded-md transition-colors"
+                  className="block px-4 py-3 text-gray-700 hover:bg-white hover:text-orange-600 rounded-md transition-colors"
                 >
                   {link.label}
                 </Link>

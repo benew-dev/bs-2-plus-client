@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { PackageSearch } from "lucide-react";
+import { Search as SearchIcon } from "lucide-react";
 
 // Fonction de debounce pour limiter les requêtes
 const useDebounce = (fn, delay) => {
@@ -98,7 +98,7 @@ const Search = ({ setLoading }) => {
     >
       <input
         ref={inputRef}
-        className="grow appearance-none border-2 border-orange-200 bg-white rounded-md mr-2 py-2 px-2 md:px-3 hover:border-orange-300 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 text-sm md:text-base transition-all placeholder-gray-400"
+        className="grow appearance-none border border-gray-300 bg-white rounded-md mr-2 py-2 px-2 md:px-3 hover:border-orange-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 text-sm md:text-base transition-all placeholder-gray-400"
         type="search"
         placeholder="Rechercher..."
         value={keyword}
@@ -113,8 +113,8 @@ const Search = ({ setLoading }) => {
         className={`p-2 md:px-4 md:py-2 inline-flex items-center justify-center border-2 border-transparent ${
           isSubmitting
             ? "bg-gray-400 cursor-not-allowed"
-            : "bg-gradient-sunset hover:shadow-sunset"
-        } text-white rounded-md transition-all flex-shrink-0 transform hover:-translate-y-0.5`}
+            : "bg-gradient-sunset hover:shadow-sunset-md hover-lift"
+        } text-white rounded-md transition-all flex-shrink-0`}
         onClick={debouncedSubmit}
         disabled={isSubmitting}
         aria-label="Lancer la recherche"
@@ -122,7 +122,7 @@ const Search = ({ setLoading }) => {
         {isSubmitting ? (
           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
-          <PackageSearch className="w-5 h-5" />
+          <SearchIcon className="w-5 h-5" />
         )}
       </button>
     </form>

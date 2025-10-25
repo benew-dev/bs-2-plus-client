@@ -106,7 +106,7 @@ const ListProducts = ({ type, data, categories }) => {
   if (!hasValidData) {
     return (
       <div
-        className="p-4 bg-gradient-sunset-soft border-l-4 border-orange-500 rounded-md my-4"
+        className="p-4 bg-orange-50 border-l-4 border-orange-500 rounded-md my-4"
         role="alert"
       >
         <p className="font-medium text-orange-800">
@@ -117,7 +117,7 @@ const ListProducts = ({ type, data, categories }) => {
   }
 
   return (
-    <section className="py-8 bg-gradient-sunset-lighter">
+    <section className="py-8 bg-gray-50">
       <div className="container max-w-[1440px] mx-auto px-4">
         <div className="flex flex-col md:flex-row -mx-4">
           {/* Sidebar Filters - Desktop uniquement */}
@@ -128,8 +128,8 @@ const ListProducts = ({ type, data, categories }) => {
                 setLocalLoading={setLocalLoading}
               />
             ) : (
-              <div className="p-4 bg-gradient-sunset-soft rounded-md shadow-sm">
-                <p className="text-orange-700">Chargement des filtres...</p>
+              <div className="p-4 bg-white rounded-md shadow-sm border border-gray-200">
+                <p className="text-gray-600">Chargement des filtres...</p>
               </div>
             )}
           </div>
@@ -145,7 +145,7 @@ const ListProducts = ({ type, data, categories }) => {
               <div className="flex items-center justify-between gap-3 md:hidden mb-4">
                 <button
                   onClick={() => setShowMobileFilters(!showMobileFilters)}
-                  className="p-2.5 border-2 border-orange-200 bg-white rounded-md shadow-sm hover:bg-gradient-sunset-soft hover:border-orange-300 flex-shrink-0 transition-all"
+                  className="p-2.5 border border-gray-300 bg-white rounded-md shadow-sm hover:bg-gray-50 hover:border-orange-400 flex-shrink-0 transition-all"
                   aria-label="Afficher/Masquer les filtres"
                   aria-expanded={showMobileFilters}
                 >
@@ -173,7 +173,7 @@ const ListProducts = ({ type, data, categories }) => {
                     setLocalLoading={setLocalLoading}
                   />
                 ) : (
-                  <div className="p-4 bg-gradient-sunset-soft rounded-md">
+                  <div className="p-4 bg-white rounded-md border border-gray-200">
                     <p>Chargement des filtres...</p>
                   </div>
                 )}
@@ -183,7 +183,7 @@ const ListProducts = ({ type, data, categories }) => {
             {/* Affichage du récapitulatif des filtres */}
             {filterSummary && (
               <div
-                className="mb-4 p-3 bg-gradient-sunset-soft rounded-lg text-sm border-l-4 border-orange-500 shadow-sm"
+                className="mb-4 p-3 bg-orange-50 rounded-lg text-sm border-l-4 border-orange-500"
                 aria-live="polite"
                 aria-label="Filtres appliqués"
               >
@@ -193,7 +193,7 @@ const ListProducts = ({ type, data, categories }) => {
 
             <div className="mb-4 flex justify-between items-center">
               <h1
-                className="text-xl font-bold text-gradient-sunset"
+                className="text-xl font-bold text-gray-900"
                 aria-live="polite"
               >
                 {data?.products?.length > 0
@@ -214,11 +214,11 @@ const ListProducts = ({ type, data, categories }) => {
               </div>
             ) : isArrayEmpty(data?.products) ? (
               <div
-                className="flex flex-col items-center justify-center py-10 text-center bg-white rounded-lg shadow-sunset p-8"
+                className="flex flex-col items-center justify-center py-10 text-center bg-white rounded-lg shadow-md p-8"
                 aria-live="assertive"
                 role="status"
               >
-                <div className="mb-4 text-5xl text-gradient-sunset">
+                <div className="mb-4 text-5xl text-orange-600">
                   <SearchX />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">
@@ -231,7 +231,7 @@ const ListProducts = ({ type, data, categories }) => {
                 </p>
                 <button
                   onClick={handleResetFilters}
-                  className="mt-6 px-6 py-3 bg-gradient-sunset text-white rounded-lg hover:shadow-sunset-lg transition-all transform hover:-translate-y-1 font-semibold"
+                  className="mt-6 px-6 py-3 bg-gradient-sunset text-white rounded-lg hover:shadow-sunset-lg hover-lift transition-all font-semibold"
                   aria-label="Voir tous les produits disponibles"
                 >
                   Voir tous les produits
