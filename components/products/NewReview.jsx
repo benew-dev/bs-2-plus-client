@@ -27,7 +27,12 @@ const NewReview = ({ product }) => {
   // }, [error, user]);
 
   const submitHandler = () => {
+    console.log("Starting to handle submit post");
     const reviewData = { rating, comment, productId: product?._id };
+    console.log(
+      "Passing review data to postReview from OrderContext",
+      reviewData,
+    );
     postReview(reviewData);
   };
 

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function PUT(req, { params }) {
   try {
+    console.log();
     const body = await req.bdoy();
 
     console.log("Body for review", body);
