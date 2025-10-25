@@ -4,14 +4,10 @@ import { NextResponse } from "next/server";
 
 export async function PUT(req, { params }) {
   try {
-    console.log();
     const body = await req.json();
 
-    console.log("Body for review", body);
-
-    console.log("Params", params);
     // Validation simple de l'ID MongoDB
-    const { id } = params;
+    const { id } = await params;
     if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
       return NextResponse.json(
         {

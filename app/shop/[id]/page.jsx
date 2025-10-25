@@ -33,7 +33,7 @@ const getProductDetails = async (id) => {
     }
 
     // 2. Construire l'URL de l'API
-    const apiUrl = `${process.env.API_URL || ""}/api/products/${id}`;
+    const apiUrl = `${process.env.API_URL || "https://bs-2-plus-client.vercel.app"}/api/products/${id}`;
 
     console.log("Fetching product details from:", apiUrl); // Log pour debug
 
