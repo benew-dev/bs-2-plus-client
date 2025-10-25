@@ -21,7 +21,7 @@ import { withIntelligentRateLimit } from "@/utils/rateLimit";
  * Les utilisateurs authentifiés bénéficient automatiquement de limites doublées
  */
 export const GET = withIntelligentRateLimit(
-  async function ({ params }) {
+  async function (req, { params }) {
     try {
       // Validation simple de l'ID MongoDB
       const { id } = await params;
