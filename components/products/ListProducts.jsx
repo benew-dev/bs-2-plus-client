@@ -48,8 +48,6 @@ const ListProducts = ({ type, data, categories }) => {
   const page = searchParams?.get("page");
 
   useEffect(() => {
-    console.log("🔄 ListProducts remounted with type:", type);
-    console.log("📦 Data received:", data);
     setLocalLoading(false);
     setShowMobileFilters(false);
   }, [type]);
