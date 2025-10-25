@@ -811,11 +811,8 @@ function ProductDetails({ product, sameCategoryProducts }) {
             </div>
           )}
         </div>
-
-        {/* {canReview && <NewReview product={product} />} */}
-        <NewReview product={product} />
+        {canReview && <NewReview product={product} />}\
         <hr />
-
         {/* Produits connexes */}
         <RelatedProductsCarousel
           products={sameCategoryProducts}
