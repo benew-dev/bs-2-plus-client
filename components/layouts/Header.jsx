@@ -15,11 +15,9 @@ import { signOut, useSession } from "next-auth/react";
 import AuthContext from "@/context/AuthContext";
 import { Menu, ShoppingCart, User, X } from "lucide-react";
 
-// Constantes
 const CART_LOAD_DELAY = 500;
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
-// Liens de navigation
 const NAV_LINKS = [
   { href: "/", label: "Accueil" },
   { href: "/men", label: "Men" },
@@ -28,7 +26,6 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contactez-nous" },
 ];
 
-// ✅ Dropdown utilisateur avec gestion vérification
 const UserDropdown = memo(({ user, handleSignOut }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -58,12 +55,12 @@ const UserDropdown = memo(({ user, handleSignOut }) => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1 rounded-full hover:ring-2 hover:ring-blue-400 transition-all"
+        className="p-1 rounded-full hover:ring-2 hover:ring-pink-400 transition-all"
         aria-label="Menu utilisateur"
         aria-expanded={isOpen}
         title="Menu utilisateur"
       >
-        <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200">
+        <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-gradient-sunset">
           <Image
             alt={`Photo de profil de ${user?.name || "utilisateur"}`}
             src={
@@ -80,14 +77,14 @@ const UserDropdown = memo(({ user, handleSignOut }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-sunset border border-orange-100 z-50">
           <div className="py-1">
             {menuItems.map((item, index) => (
               <Link
                 key={`menu-item-${index}`}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gradient-sunset-soft hover:text-orange-700 transition-colors"
               >
                 {item.label}
               </Link>
@@ -118,14 +115,10 @@ const Header = () => {
   const [isLoadingCart, setIsLoadingCart] = useState(false);
   const { data } = useSession();
 
-  // Refs pour gérer les timeouts
   const loadCartTimeoutRef = useRef(null);
   const signOutTimeoutRef = useRef(null);
-
-  // Flag pour éviter les chargements multiples
   const isCartLoadingRef = useRef(false);
 
-  // Cleanup des timeouts au démontage
   useEffect(() => {
     return () => {
       if (loadCartTimeoutRef.current) clearTimeout(loadCartTimeoutRef.current);
@@ -133,7 +126,6 @@ const Header = () => {
     };
   }, []);
 
-  // Fonction loadCart optimisée avec debounce
   const loadCart = useCallback(async () => {
     if (isCartLoadingRef.current) return;
 
@@ -151,7 +143,6 @@ const Header = () => {
     }
   }, [setCartToState]);
 
-  // useEffect optimisé pour la gestion de session
   useEffect(() => {
     let mounted = true;
 
@@ -182,7 +173,6 @@ const Header = () => {
     };
   }, [data, setUser, loadCart]);
 
-  // Fermer le menu mobile si on clique en dehors
   useEffect(() => {
     const handleClickOutside = (event) => {
       const mobileMenu = document.getElementById("mobile-menu");
@@ -218,7 +208,6 @@ const Header = () => {
     }
   }, [mobileMenuOpen]);
 
-  // handleSignOut optimisé
   const handleSignOut = useCallback(async () => {
     try {
       clearUser();
@@ -240,14 +229,13 @@ const Header = () => {
     setMobileMenuOpen(false);
   };
 
-  // Toggle menu mobile
   const toggleMobileMenu = (e) => {
     e.stopPropagation();
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
   return (
-    <header className="bg-white py-2 border-b sticky top-0 z-50 shadow-sm">
+    <header className="bg-white py-2 border-b border-orange-100 sticky top-0 z-50 shadow-sm">
       <div className="container max-w-[1440px] mx-auto px-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -270,7 +258,7 @@ const Header = () => {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-gray-700 hover:text-blue-600 transition-colors text-sm font-medium"
+                className="text-gray-700 hover:text-transparent hover:bg-gradient-sunset hover:bg-clip-text transition-all text-sm font-medium"
               >
                 {link.label}
               </Link>
@@ -279,16 +267,16 @@ const Header = () => {
 
           {/* Icons Desktop + Mobile */}
           <div className="flex items-center gap-3">
-            {/* Icône Panier */}
+            {/* Icône Panier avec gradient */}
             <Link
               href="/cart"
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+              className="relative p-2 text-gray-700 hover:text-orange-600 transition-colors group"
               aria-label="Panier"
               title="Accéder au panier"
             >
-              <ShoppingCart className="w-6 h-6" />
+              <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center text-xs font-medium">
+                <span className="absolute -top-1 -right-1 bg-gradient-sunset text-white rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center text-xs font-medium shadow-sunset animate-pulse-sunset">
                   {cartCount}
                 </span>
               )}
@@ -300,7 +288,7 @@ const Header = () => {
             ) : (
               <Link
                 href="/login"
-                className="p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                className="p-2 text-gray-700 hover:text-pink-600 transition-colors"
                 aria-label="Connexion"
                 title="Se connecter"
               >
@@ -312,7 +300,7 @@ const Header = () => {
             <button
               onClick={toggleMobileMenu}
               data-menu-toggle
-              className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
+              className="md:hidden p-2 text-gray-700 hover:text-purple-600 transition-colors"
               aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-menu"
@@ -326,11 +314,11 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile menu - Affiche uniquement les liens de navigation */}
+        {/* Mobile menu */}
         {mobileMenuOpen && (
           <div
             id="mobile-menu"
-            className="md:hidden mt-4 border-t pt-4 pb-2"
+            className="md:hidden mt-4 border-t border-orange-100 pt-4 pb-2 bg-gradient-sunset-soft rounded-lg"
             role="dialog"
             aria-modal="true"
             aria-label="Menu principal"
@@ -341,7 +329,7 @@ const Header = () => {
                   key={link.href}
                   href={link.href}
                   onClick={closeMobileMenu}
-                  className="block px-4 py-3 text-gray-700 hover:bg-blue-50 rounded-md transition-colors"
+                  className="block px-4 py-3 text-gray-700 hover:bg-white hover:text-gradient-sunset rounded-md transition-colors"
                 >
                   {link.label}
                 </Link>

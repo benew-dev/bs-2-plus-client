@@ -14,10 +14,8 @@ const ProductItem = memo(({ product }) => {
   const { addItemToCart, updateCart, cart } = useContext(CartContext);
   const { user, toggleFavorite } = useContext(AuthContext);
 
-  // ✅ État de loading pour le bouton Favoris
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-  // Vérification de sécurité pour s'assurer que product est un objet valide
   if (!product || typeof product !== "object") {
     return null;
   }
@@ -27,11 +25,8 @@ const ProductItem = memo(({ product }) => {
   const productName = product.name || "Produit sans nom";
   const productPrice = product.price || 0;
   const productCategory = product.category?.categoryName || "Non catégorisé";
-
-  // URL de l'image avec fallback
   const imageUrl = product.images?.[0]?.url || "/images/default_product.png";
 
-  // ✅ Calculer si le produit est dans les favoris
   const isFavorite = useMemo(() => {
     if (!user || !user.favorites || !Array.isArray(user.favorites)) {
       return false;
@@ -41,7 +36,6 @@ const ProductItem = memo(({ product }) => {
     );
   }, [user, productId]);
 
-  // Handler pour ajouter au panier
   const addToCartHandler = useCallback(
     (e) => {
       e.preventDefault();
@@ -71,7 +65,6 @@ const ProductItem = memo(({ product }) => {
     [user, cart, productId, updateCart, addItemToCart],
   );
 
-  // ✅ Handler pour les favoris avec état de loading
   const toggleFavoriteHandler = useCallback(
     async (e) => {
       e.preventDefault();
@@ -85,13 +78,11 @@ const ProductItem = memo(({ product }) => {
 
       setFavoriteLoading(true);
       try {
-        // ✅ Préparer l'image du produit
         const productImage = product.images?.[0] || {
           public_id: null,
           url: null,
         };
 
-        // Appeler la méthode du context
         await toggleFavorite(productId, productName, productImage);
       } catch (error) {
         console.error("Error toggling favorite:", error);
@@ -104,25 +95,27 @@ const ProductItem = memo(({ product }) => {
   );
 
   return (
-    <article className="group relative bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 w-full">
+    <article className="group relative bg-white rounded-lg shadow-sm hover:shadow-sunset-lg transition-all duration-300 overflow-hidden border border-orange-100 w-full transform hover:-translate-y-2">
       <Link
         href={`/shop/${productId}`}
         className="block"
         aria-label={`Voir les détails du produit: ${productName}`}
       >
-        {/* Badge de stock */}
+        {/* Badge de stock avec gradient */}
         {!inStock && (
-          <div className="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg">
+          <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg">
             Rupture de stock
           </div>
         )}
 
-        {/* ✅ Bouton Favoris avec état de loading */}
+        {/* Bouton Favoris avec gradient */}
         <button
           onClick={toggleFavoriteHandler}
           disabled={favoriteLoading}
           className={`absolute top-3 right-3 z-10 backdrop-blur-sm p-2 rounded-full shadow-md hover:scale-110 transition-all duration-200 ${
-            isFavorite ? "bg-pink-50" : "bg-white/90 hover:bg-white"
+            isFavorite
+              ? "bg-gradient-to-br from-pink-100 to-purple-100"
+              : "bg-white/90 hover:bg-gradient-sunset-soft"
           } ${favoriteLoading ? "opacity-60 cursor-not-allowed" : ""}`}
           aria-label={
             isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
@@ -130,10 +123,8 @@ const ProductItem = memo(({ product }) => {
           aria-busy={favoriteLoading}
         >
           {favoriteLoading ? (
-            // Spinner de loading
             <div className="w-4 h-4 border-2 border-pink-600 border-t-transparent rounded-full animate-spin" />
           ) : (
-            // Icône Cœur
             <Heart
               className={`w-4 h-4 transition-colors duration-200 ${
                 isFavorite
@@ -144,8 +135,8 @@ const ProductItem = memo(({ product }) => {
           )}
         </button>
 
-        {/* Image du produit */}
-        <div className="relative w-full h-48 bg-white overflow-hidden">
+        {/* Image du produit avec effet hover */}
+        <div className="relative w-full h-48 bg-gradient-sunset-soft overflow-hidden">
           <Image
             src={imageUrl}
             alt={productName}
@@ -155,33 +146,35 @@ const ProductItem = memo(({ product }) => {
               e.currentTarget.src = "/images/default_product.png";
               e.currentTarget.onerror = null;
             }}
-            className="object-contain group-hover:scale-105 transition-transform duration-500 p-2"
+            className="object-contain group-hover:scale-110 transition-transform duration-500 p-2"
             priority={false}
             loading="lazy"
             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
+          {/* Overlay subtil au survol */}
+          <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
 
         {/* Contenu du produit */}
         <div className="p-4 space-y-2.5">
-          {/* Catégorie */}
+          {/* Catégorie avec gradient */}
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-sunset text-white">
               {productCategory}
             </span>
           </div>
 
-          {/* Nom du produit */}
+          {/* Nom du produit avec hover gradient */}
           <h3
-            className="font-semibold text-base text-gray-900 line-clamp-2 min-h-[2.5rem] group-hover:text-blue-600 transition-colors"
+            className="font-semibold text-base text-gray-900 line-clamp-2 min-h-[2.5rem] group-hover:text-transparent group-hover:bg-gradient-sunset group-hover:bg-clip-text transition-all"
             title={productName}
           >
             {productName}
           </h3>
 
-          {/* Prix */}
+          {/* Prix avec gradient */}
           <div className="pt-1">
-            <span className="text-xl font-bold text-gray-900">
+            <span className="text-xl font-bold text-transparent bg-gradient-sunset bg-clip-text">
               {new Intl.NumberFormat("fr-FR", {
                 style: "currency",
                 currency: "Fdj",
@@ -189,7 +182,7 @@ const ProductItem = memo(({ product }) => {
             </span>
           </div>
 
-          {/* Bouton d'ajout au panier */}
+          {/* Bouton d'ajout au panier avec gradient */}
           <div className="pt-3">
             <button
               disabled={!inStock}
@@ -198,7 +191,7 @@ const ProductItem = memo(({ product }) => {
                 transition-all duration-200 shadow-sm
                 ${
                   inStock
-                    ? "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95"
+                    ? "bg-gradient-sunset text-white hover:shadow-sunset active:scale-95 transform hover:-translate-y-0.5"
                     : "bg-gray-200 text-gray-500 cursor-not-allowed"
                 }
               `}
@@ -213,12 +206,14 @@ const ProductItem = memo(({ product }) => {
             </button>
           </div>
         </div>
+
+        {/* Border glow au hover */}
+        <div className="absolute inset-0 rounded-lg border-2 border-transparent group-hover:border-orange-200 transition-colors pointer-events-none"></div>
       </Link>
     </article>
   );
 });
 
-// Ajouter displayName pour faciliter le débogage
 ProductItem.displayName = "ProductItem";
 
 export default ProductItem;

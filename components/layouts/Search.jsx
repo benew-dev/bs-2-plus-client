@@ -29,24 +29,20 @@ const Search = ({ setLoading }) => {
   const pathname = usePathname();
   const inputRef = useRef(null);
 
-  // Fonction pour modifier le keyword avec validation basique
   const handleKeywordChange = useCallback((e) => {
     const value = e.target.value;
     setKeyword(value);
   }, []);
 
-  // Validation et soumission debounce
   const submitHandler = useCallback(
     async (e) => {
       if (e) e.preventDefault();
 
-      // Éviter les soumissions multiples
       if (isSubmitting) return;
       setIsSubmitting(true);
       setLoading?.(true);
 
       try {
-        // Vérification simple avant validation
         if (!keyword || keyword.trim() === "") {
           toast.error("Veuillez entrer un terme de recherche");
           setLoading?.(false);
@@ -54,10 +50,6 @@ const Search = ({ setLoading }) => {
           return;
         }
 
-        // Validation avec le schéma Yup
-        // await searchSchema.validate({ keyword }, { abortEarly: false });
-
-        // Navigation vers la page de résultats
         router.push(
           `${pathname}?keyword=${encodeURIComponent(keyword.trim())}`,
         );
@@ -65,14 +57,11 @@ const Search = ({ setLoading }) => {
         setLoading?.(false);
         setIsSubmitting(false);
       } catch (error) {
-        // Gestion d'erreur améliorée
         if (error.inner && error.inner.length) {
-          // Afficher toutes les erreurs de validation
           error.inner.forEach((err) => {
             toast.error(err.message);
           });
         } else {
-          // Afficher une erreur générique plus conviviale
           toast.error(
             error.message || "Une erreur est survenue lors de la recherche",
           );
@@ -85,10 +74,8 @@ const Search = ({ setLoading }) => {
     [keyword, router, setLoading, pathname, isSubmitting],
   );
 
-  // Soumettre sur appui de la touche Entrée avec debounce
   const debouncedSubmit = useDebounce(submitHandler, 300);
 
-  // Gérer l'appui sur la touche Entrée
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === "Enter") {
@@ -111,7 +98,7 @@ const Search = ({ setLoading }) => {
     >
       <input
         ref={inputRef}
-        className="grow appearance-none border border-gray-200 bg-gray-100 rounded-md mr-2 py-2 px-2 md:px-3 hover:border-gray-400 focus:outline-none focus:border-blue-500 text-sm md:text-base"
+        className="grow appearance-none border-2 border-orange-200 bg-white rounded-md mr-2 py-2 px-2 md:px-3 hover:border-orange-300 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 text-sm md:text-base transition-all placeholder-gray-400"
         type="search"
         placeholder="Rechercher..."
         value={keyword}
@@ -123,16 +110,20 @@ const Search = ({ setLoading }) => {
       />
       <button
         type="button"
-        className={`p-2 md:px-4 md:py-2 inline-flex items-center justify-center border border-transparent ${
+        className={`p-2 md:px-4 md:py-2 inline-flex items-center justify-center border-2 border-transparent ${
           isSubmitting
-            ? "bg-blue-400 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700"
-        } text-white rounded-md transition-colors flex-shrink-0`}
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-gradient-sunset hover:shadow-sunset"
+        } text-white rounded-md transition-all flex-shrink-0 transform hover:-translate-y-0.5`}
         onClick={debouncedSubmit}
         disabled={isSubmitting}
         aria-label="Lancer la recherche"
       >
-        <PackageSearch className="w-5 h-5" />
+        {isSubmitting ? (
+          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <PackageSearch className="w-5 h-5" />
+        )}
       </button>
     </form>
   );

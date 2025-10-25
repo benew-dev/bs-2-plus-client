@@ -47,14 +47,12 @@ const ListProducts = ({ type, data, categories }) => {
   const maxPrice = searchParams?.get("max");
   const page = searchParams?.get("page");
 
-  // Dans ListProducts.jsx, après tes autres useEffect
   useEffect(() => {
     console.log("🔄 ListProducts remounted with type:", type);
     console.log("📦 Data received:", data);
-    // Réinitialiser les états locaux quand les données changent
     setLocalLoading(false);
     setShowMobileFilters(false);
-  }, [type]); // ← Se déclenche quand le type change (men → women)
+  }, [type]);
 
   // Construire un message récapitulatif des filtres appliqués
   const getFilterSummary = useCallback(() => {
@@ -82,14 +80,11 @@ const ListProducts = ({ type, data, categories }) => {
     }
   }, [keyword, category, minPrice, maxPrice, page, categories]);
 
-  // Utiliser useMemo pour éviter les recalculs inutiles
   const filterSummary = useMemo(() => getFilterSummary(), [getFilterSummary]);
 
-  // Vérifier la validité des données pour éviter les erreurs
   const hasValidData = data && typeof data === "object";
   const hasValidCategories = categories && Array.isArray(categories);
 
-  // Handler pour réinitialiser les filtres
   const handleResetFilters = useCallback(() => {
     try {
       setLocalLoading(true);
@@ -110,14 +105,13 @@ const ListProducts = ({ type, data, categories }) => {
     }
   }, [data, isInitialLoad, localLoading]);
 
-  // Afficher un avertissement si les données ne sont pas valides
   if (!hasValidData) {
     return (
       <div
-        className="p-4 bg-yellow-50 border border-yellow-200 rounded-md my-4"
+        className="p-4 bg-gradient-sunset-soft border-l-4 border-orange-500 rounded-md my-4"
         role="alert"
       >
-        <p className="font-medium text-yellow-700">
+        <p className="font-medium text-orange-800">
           Les données des produits ne sont pas disponibles pour le moment.
         </p>
       </div>
@@ -125,7 +119,7 @@ const ListProducts = ({ type, data, categories }) => {
   }
 
   return (
-    <section className="py-8">
+    <section className="py-8 bg-gradient-sunset-lighter">
       <div className="container max-w-[1440px] mx-auto px-4">
         <div className="flex flex-col md:flex-row -mx-4">
           {/* Sidebar Filters - Desktop uniquement */}
@@ -136,8 +130,8 @@ const ListProducts = ({ type, data, categories }) => {
                 setLocalLoading={setLocalLoading}
               />
             ) : (
-              <div className="p-4 bg-gray-100 rounded-md">
-                <p>Chargement des filtres...</p>
+              <div className="p-4 bg-gradient-sunset-soft rounded-md shadow-sm">
+                <p className="text-orange-700">Chargement des filtres...</p>
               </div>
             )}
           </div>
@@ -153,11 +147,11 @@ const ListProducts = ({ type, data, categories }) => {
               <div className="flex items-center justify-between gap-3 md:hidden mb-4">
                 <button
                   onClick={() => setShowMobileFilters(!showMobileFilters)}
-                  className="p-2.5 border border-gray-200 bg-white rounded-md shadow-sm hover:bg-gray-50 flex-shrink-0"
+                  className="p-2.5 border-2 border-orange-200 bg-white rounded-md shadow-sm hover:bg-gradient-sunset-soft hover:border-orange-300 flex-shrink-0 transition-all"
                   aria-label="Afficher/Masquer les filtres"
                   aria-expanded={showMobileFilters}
                 >
-                  <Grid2x2 className="w-5 h-5 text-gray-700" />
+                  <Grid2x2 className="w-5 h-5 text-orange-600" />
                 </button>
                 <div className="flex-1">
                   <Search setLoading={setLocalLoading} />
@@ -181,27 +175,27 @@ const ListProducts = ({ type, data, categories }) => {
                     setLocalLoading={setLocalLoading}
                   />
                 ) : (
-                  <div className="p-4 bg-gray-100 rounded-md">
+                  <div className="p-4 bg-gradient-sunset-soft rounded-md">
                     <p>Chargement des filtres...</p>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Affichage du récapitulatif des filtres et du nombre de résultats */}
+            {/* Affichage du récapitulatif des filtres */}
             {filterSummary && (
               <div
-                className="mb-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-800 border border-blue-100"
+                className="mb-4 p-3 bg-gradient-sunset-soft rounded-lg text-sm border-l-4 border-orange-500 shadow-sm"
                 aria-live="polite"
                 aria-label="Filtres appliqués"
               >
-                <p className="font-medium">{filterSummary}</p>
+                <p className="font-medium text-orange-800">{filterSummary}</p>
               </div>
             )}
 
             <div className="mb-4 flex justify-between items-center">
               <h1
-                className="text-xl font-bold text-gray-800"
+                className="text-xl font-bold text-gradient-sunset"
                 aria-live="polite"
               >
                 {data?.products?.length > 0
@@ -222,24 +216,24 @@ const ListProducts = ({ type, data, categories }) => {
               </div>
             ) : isArrayEmpty(data?.products) ? (
               <div
-                className="flex flex-col items-center justify-center py-10 text-center"
+                className="flex flex-col items-center justify-center py-10 text-center bg-white rounded-lg shadow-sunset p-8"
                 aria-live="assertive"
                 role="status"
               >
-                <div className="mb-4 text-5xl text-gray-300">
+                <div className="mb-4 text-5xl text-gradient-sunset">
                   <SearchX />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">
                   Aucun produit trouvé
                 </h2>
-                <p className="text-gray-600 max-w-md">
+                <p className="text-gray-600 max-w-md mb-4">
                   {keyword
                     ? `Aucun résultat pour "${keyword}". Essayez d'autres termes de recherche.`
                     : "Aucun produit ne correspond aux filtres sélectionnés. Essayez de modifier vos critères."}
                 </p>
                 <button
                   onClick={handleResetFilters}
-                  className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="mt-6 px-6 py-3 bg-gradient-sunset text-white rounded-lg hover:shadow-sunset-lg transition-all transform hover:-translate-y-1 font-semibold"
                   aria-label="Voir tous les produits disponibles"
                 >
                   Voir tous les produits

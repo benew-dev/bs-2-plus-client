@@ -36,7 +36,6 @@ const Filters = ({ categories, setLocalLoading }) => {
     }
 
     if (min !== "" && max !== "") {
-      // Conversion sécurisée en nombres
       const minNum = Number(min);
       const maxNum = Number(max);
 
@@ -58,17 +57,14 @@ const Filters = ({ categories, setLocalLoading }) => {
       setLocalLoading(true);
 
       try {
-        // Création d'une nouvelle instance de URLSearchParams
         const params = new URLSearchParams(searchParams?.toString() || "");
 
-        // Logique de basculement: si la catégorie est déjà sélectionnée, la désélectionner
         if (params.get("category") === categoryId) {
           params.delete("category");
         } else {
           params.set("category", categoryId);
         }
 
-        // Navigation vers la nouvelle URL
         const path = `${pathname}?${params.toString()}`;
         setIsSubmitting(false);
         setLocalLoading(false);
@@ -90,17 +86,13 @@ const Filters = ({ categories, setLocalLoading }) => {
     setLocalLoading(true);
 
     try {
-      // Validation des prix
       await validatePrices();
 
-      // Création des paramètres d'URL
       let params = new URLSearchParams(searchParams?.toString() || "");
 
-      // Mise à jour des paramètres de prix
       params = getPriceQueryParams(params, "min", min);
       params = getPriceQueryParams(params, "max", max);
 
-      // Navigation
       const path = `${pathname}?${params.toString()}`;
       setIsSubmitting(false);
       setLocalLoading(false);
@@ -130,7 +122,7 @@ const Filters = ({ categories, setLocalLoading }) => {
     setMin("");
     setMax("");
     router.push(`${pathname}`);
-  }, [router, setLocalLoading]);
+  }, [router, setLocalLoading, pathname]);
 
   // Vérifier si des filtres sont actifs
   const hasActiveFilters = useMemo(() => {
@@ -142,12 +134,14 @@ const Filters = ({ categories, setLocalLoading }) => {
       <div className="md:sticky md:top-20">
         {/* Header - Desktop uniquement */}
         <div className="hidden md:flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">Filtres</h2>
+          <h2 className="text-xl font-semibold text-gradient-sunset">
+            Filtres
+          </h2>
 
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
-              className="text-sm text-blue-600 cursor-pointer hover:text-blue-800"
+              className="text-sm text-transparent bg-gradient-sunset bg-clip-text cursor-pointer hover:opacity-75 font-semibold transition-opacity"
               aria-label="Réinitialiser tous les filtres"
             >
               Réinitialiser
@@ -155,23 +149,25 @@ const Filters = ({ categories, setLocalLoading }) => {
           )}
         </div>
 
-        {/* Contenu des filtres - Toujours visible */}
+        {/* Contenu des filtres */}
         <div className="space-y-4">
-          {/* Prix */}
-          <div className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm">
-            <h3 className="font-semibold mb-3 text-gray-700">Prix (Fdj)</h3>
+          {/* Prix avec gradient */}
+          <div className="p-4 border-2 border-orange-200 bg-white rounded-lg shadow-sunset">
+            <h3 className="font-semibold mb-3 text-gradient-sunset">
+              Prix (Fdj)
+            </h3>
             <div className="grid grid-cols-2 gap-x-2 mb-3">
               <div>
                 <label
                   htmlFor="min-price"
-                  className="text-xs text-gray-500 mb-1 block"
+                  className="text-xs text-gray-600 mb-1 block font-medium"
                 >
                   Min
                 </label>
                 <input
                   id="min-price"
                   name="min"
-                  className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-blue-500 w-full"
+                  className="appearance-none border-2 border-orange-200 bg-orange-50 rounded-md py-2 px-3 hover:border-orange-300 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 w-full transition-all"
                   type="number"
                   min="0"
                   placeholder="Min"
@@ -185,14 +181,14 @@ const Filters = ({ categories, setLocalLoading }) => {
               <div>
                 <label
                   htmlFor="max-price"
-                  className="text-xs text-gray-500 mb-1 block"
+                  className="text-xs text-gray-600 mb-1 block font-medium"
                 >
                   Max
                 </label>
                 <input
                   id="max-price"
                   name="max"
-                  className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-blue-500 w-full"
+                  className="appearance-none border-2 border-orange-200 bg-orange-50 rounded-md py-2 px-3 hover:border-orange-300 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 w-full transition-all"
                   type="number"
                   min="0"
                   placeholder="Max"
@@ -207,34 +203,43 @@ const Filters = ({ categories, setLocalLoading }) => {
             <button
               className={`w-full py-2 px-4 ${
                 isSubmitting
-                  ? "bg-blue-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              } text-white cursor-pointer rounded-md transition-colors`}
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-sunset hover:shadow-sunset"
+              } text-white cursor-pointer rounded-md transition-all font-semibold transform hover:-translate-y-0.5`}
               onClick={handlePriceFilter}
               aria-label="Appliquer les filtres de prix"
               disabled={isSubmitting}
             >
-              Appliquer
+              {isSubmitting ? (
+                <span className="flex items-center justify-center">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Chargement...
+                </span>
+              ) : (
+                "Appliquer"
+              )}
             </button>
           </div>
 
-          {/* Catégories */}
-          <div className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm">
-            <h3 className="font-semibold mb-3 text-gray-700">Catégories</h3>
+          {/* Catégories avec gradient */}
+          <div className="p-4 border-2 border-pink-200 bg-white rounded-lg shadow-sunset">
+            <h3 className="font-semibold mb-3 text-gradient-sunset">
+              Catégories
+            </h3>
 
             {isArrayEmpty(categories) ? (
               <div className="w-full text-center py-2">
                 <p className="text-gray-500">Aucune catégorie disponible</p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-2 hide-scrollbar">
                 {categories?.map((category) => (
                   <button
                     key={category?._id}
-                    className={`flex items-center w-full p-2 rounded-md transition-colors cursor-pointer ${
+                    className={`flex items-center w-full p-2 rounded-md transition-all cursor-pointer font-medium ${
                       currentCategory === category?._id
-                        ? "bg-blue-100 text-blue-700"
-                        : "hover:bg-gray-100 text-gray-700"
+                        ? "bg-gradient-sunset text-white shadow-sm transform scale-105"
+                        : "hover:bg-gradient-sunset-soft text-gray-700 hover:text-orange-700"
                     }`}
                     onClick={() => handleCategoryClick(category?._id)}
                     aria-pressed={currentCategory === category?._id}
@@ -252,7 +257,7 @@ const Filters = ({ categories, setLocalLoading }) => {
             <div className="md:hidden">
               <button
                 onClick={resetFilters}
-                className="w-full py-2 text-center text-sm text-red-600 hover:text-red-800 border border-red-200 cursor-pointer rounded-md hover:bg-red-50"
+                className="w-full py-2 text-center text-sm font-semibold text-red-600 hover:text-red-800 border-2 border-red-200 cursor-pointer rounded-md hover:bg-red-50 transition-colors"
                 aria-label="Réinitialiser tous les filtres"
                 disabled={isSubmitting}
               >
