@@ -347,7 +347,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ FAVORIS : Version améliorée avec optimistic update ET revert complet
+  // Dans context/AuthContext.js
+  // Remplacer la fonction toggleFavorite par celle-ci :
+
   const toggleFavorite = async (
     productId,
     productName,
@@ -357,7 +359,6 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
 
-      // Validation basique
       if (!productId) {
         const validationError = new Error("L'ID du produit est obligatoire");
         console.error(validationError, "AuthContext", "toggleFavorite", false);
@@ -370,7 +371,11 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: "Vous devez être connecté" };
       }
 
-      // ✅ Déterminer l'action et mettre à jour localement en premier
+      // ✅ SAUVEGARDER L'ÉTAT ORIGINAL pour le revert
+      const originalFavorites = [...(user?.favorites || [])];
+      const originalUser = { ...user };
+
+      // ✅ Déterminer l'action et mettre à jour localement
       const currentFavorites = user?.favorites || [];
       const favoriteIndex = currentFavorites.findIndex(
         (fav) => fav.productId?.toString() === productId,
@@ -382,7 +387,7 @@ export const AuthProvider = ({ children }) => {
         actionToPerform = isCurrentlyInFavorites ? "remove" : "add";
       }
 
-      // ✅ Mettre à jour l'UI immédiatement (optimistic update)
+      // ✅ OPTIMISTIC UPDATE - Mise à jour immédiate de l'UI
       let updatedFavorites;
       if (actionToPerform === "add") {
         updatedFavorites = [
@@ -402,28 +407,33 @@ export const AuthProvider = ({ children }) => {
         updatedFavorites = currentFavorites;
       }
 
-      // Mettre à jour l'état local immédiatement
-      const updatedUser = {
+      // ✅ MISE À JOUR IMMÉDIATE du state local
+      const optimisticUser = {
         ...user,
         favorites: updatedFavorites,
       };
+      setUser(optimisticUser);
 
-      setUser(updatedUser);
-
-      // Synchroniser avec la session NextAuth immédiatement
+      // ✅ MISE À JOUR IMMÉDIATE de la session NextAuth
       if (updateSession && typeof updateSession === "function") {
         try {
+          // Forcer le rafraîchissement avec les nouvelles données
           await updateSession({
-            user: updatedUser,
+            ...optimisticUser,
             trigger: "update",
           });
-          console.log("Session updated with new favorites");
+          console.log(
+            "✅ Session mise à jour immédiatement avec optimistic update",
+          );
         } catch (error) {
-          console.warn("Failed to update session:", error);
+          console.warn(
+            "⚠️ Échec de la mise à jour optimiste de la session:",
+            error,
+          );
         }
       }
 
-      // Faire la requête API
+      // ✅ Faire la requête API en arrière-plan
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -449,7 +459,7 @@ export const AuthProvider = ({ children }) => {
       clearTimeout(timeoutId);
       const data = await res.json();
 
-      // Gestion des erreurs avec REVERT
+      // ✅ GESTION DES ERREURS avec REVERT COMPLET
       if (!res.ok) {
         let errorMessage = "";
         switch (res.status) {
@@ -470,23 +480,20 @@ export const AuthProvider = ({ children }) => {
             errorMessage = data.message || "Erreur lors de l'opération";
         }
 
-        // ✅ REVERT l'optimistic update en cas d'erreur
-        const revertedUser = {
-          ...user,
-          favorites: currentFavorites,
-        };
-        setUser(revertedUser);
+        // ⚠️ REVERT - Restaurer l'état original
+        console.warn("❌ Erreur API, revert de l'optimistic update");
+        setUser(originalUser);
 
         // Revert la session aussi
         if (updateSession && typeof updateSession === "function") {
           try {
             await updateSession({
-              user: revertedUser,
+              ...originalUser,
               trigger: "update",
             });
-            console.log("Session reverted after error");
+            console.log("✅ Session revertée après erreur");
           } catch (error) {
-            console.warn("Failed to revert session:", error);
+            console.warn("⚠️ Échec du revert de la session:", error);
           }
         }
 
@@ -499,8 +506,33 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: errorMessage };
       }
 
-      // Succès - La UI est déjà à jour grâce à l'optimistic update
+      // ✅ SUCCÈS - Vérifier que les données serveur correspondent
       if (data.success) {
+        console.log("✅ Favori mis à jour avec succès sur le serveur");
+
+        // ✅ SYNCHRONISATION FINALE avec les données du serveur
+        if (data.data?.favorites) {
+          const serverUser = {
+            ...user,
+            favorites: data.data.favorites,
+          };
+
+          setUser(serverUser);
+
+          // Mettre à jour la session avec les données serveur
+          if (updateSession && typeof updateSession === "function") {
+            try {
+              await updateSession({
+                ...serverUser,
+                trigger: "update",
+              });
+              console.log("✅ Session synchronisée avec les données serveur");
+            } catch (error) {
+              console.warn("⚠️ Échec de la synchronisation finale:", error);
+            }
+          }
+        }
+
         const isAdded = actionToPerform === "add";
         toast.success(
           isAdded
@@ -511,15 +543,18 @@ export const AuthProvider = ({ children }) => {
         return {
           success: true,
           isFavorite: isAdded,
-          favorites: updatedFavorites,
+          favorites: data.data?.favorites || updatedFavorites,
         };
       }
     } catch (error) {
-      // ✅ REVERT l'optimistic update en cas d'erreur réseau
-      const currentFavorites = user?.favorites || [];
+      // ⚠️ REVERT en cas d'erreur réseau
+      console.error("❌ Erreur réseau, revert de l'optimistic update");
+
+      // Restaurer l'état original
+      const originalFavorites = user?.favorites || [];
       const revertedUser = {
         ...user,
-        favorites: currentFavorites,
+        favorites: originalFavorites,
       };
       setUser(revertedUser);
 
@@ -527,11 +562,12 @@ export const AuthProvider = ({ children }) => {
       if (updateSession && typeof updateSession === "function") {
         try {
           await updateSession({
-            user: revertedUser,
+            ...revertedUser,
             trigger: "update",
           });
+          console.log("✅ Session revertée après erreur réseau");
         } catch (err) {
-          console.warn("Failed to revert session:", err);
+          console.warn("⚠️ Échec du revert de la session:", err);
         }
       }
 

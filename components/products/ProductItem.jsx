@@ -7,25 +7,30 @@ import { Heart, ShoppingCart, Star } from "lucide-react";
 import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
 import CartContext from "@/context/CartContext";
+import { useSession } from "next-auth/react"; // ✅ AJOUT
 
 const ProductItem = ({ product }) => {
   const { user, toggleFavorite } = useContext(AuthContext);
   const { addItemToCart } = useContext(CartContext);
+  const { data: session } = useSession(); // ✅ AJOUT - Écouter les changements de session
 
   const [isFavorite, setIsFavorite] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
-  // Synchroniser l'état local avec les favoris de l'utilisateur
+  // ✅ AMÉLIORATION - Synchroniser avec user ET session
   useEffect(() => {
-    if (user?.favorites) {
-      const favorite = user.favorites.some(
+    // Utiliser session.user en priorité si disponible, sinon user du contexte
+    const currentUser = session?.user || user;
+
+    if (currentUser?.favorites) {
+      const favorite = currentUser.favorites.some(
         (fav) => fav.productId?.toString() === product._id?.toString(),
       );
       setIsFavorite(favorite);
     } else {
       setIsFavorite(false);
     }
-  }, [user?.favorites, product._id]);
+  }, [session?.user?.favorites, user?.favorites, product._id]); // ✅ Écouter les deux sources
 
   const handleToggleFavorite = async (e) => {
     e.preventDefault();
@@ -41,9 +46,11 @@ const ProductItem = ({ product }) => {
     try {
       setIsTogglingFavorite(true);
 
-      // Optimistic update
-      setIsFavorite(!isFavorite);
+      // ✅ OPTIMISTIC UPDATE LOCAL immédiat
+      const newFavoriteState = !isFavorite;
+      setIsFavorite(newFavoriteState);
 
+      // Appeler l'API
       const result = await toggleFavorite(
         product._id,
         product.name,
@@ -51,14 +58,17 @@ const ProductItem = ({ product }) => {
         "toggle",
       );
 
+      // ✅ Si échec, revert l'état local
       if (!result.success) {
-        // Revert en cas d'échec
-        setIsFavorite(!isFavorite);
+        setIsFavorite(!newFavoriteState); // Revert
+        console.error("❌ Échec de la mise à jour des favoris");
+      } else {
+        console.log("✅ Favori mis à jour avec succès");
       }
     } catch (error) {
-      // Revert en cas d'erreur
+      // ✅ Revert en cas d'erreur
       setIsFavorite(!isFavorite);
-      console.error("Error toggling favorite:", error);
+      console.error("❌ Error toggling favorite:", error);
     } finally {
       setIsTogglingFavorite(false);
     }
@@ -97,7 +107,7 @@ const ProductItem = ({ product }) => {
             </div>
           )}
 
-          {/* Badge nouveau si créé récemment */}
+          {/* Badge nouveau */}
           {new Date(product.createdAt) >
             new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
             <div className="absolute top-2 left-2 bg-gradient-sunset text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sunset">
@@ -105,7 +115,7 @@ const ProductItem = ({ product }) => {
             </div>
           )}
 
-          {/* Bouton favori */}
+          {/* ✅ Bouton favori avec état visuel immédiat */}
           <button
             onClick={handleToggleFavorite}
             disabled={isTogglingFavorite || !user}
