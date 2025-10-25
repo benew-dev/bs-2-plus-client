@@ -15,6 +15,7 @@ export const OrderProvider = ({ children }) => {
   // États pour les autres parties de l'app (shipping, etc.)
   const [paymentTypes, setPaymentTypes] = useState([]);
   const [orderInfo, setOrderInfo] = useState(null);
+  const [canReview, setCanReview] = useState(false);
 
   const router = useRouter();
 
@@ -146,6 +147,35 @@ export const OrderProvider = ({ children }) => {
     }
   };
 
+  const canUserReview = async (id) => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/can_review/${id}`,
+      );
+
+      if (data?.canReview) {
+        setCanReview(data?.canReview);
+      }
+    } catch (error) {
+      setError(error?.response?.data?.message);
+    }
+  };
+
+  const postReview = async (reviewData) => {
+    try {
+      const { data } = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products/${reviewData?.productId}`,
+        reviewData,
+      );
+
+      if (data?.success) {
+        router.replace(`/shop/${reviewData?.productId}`);
+      }
+    } catch (error) {
+      setError(error?.response?.data?.message);
+    }
+  };
+
   const clearErrors = () => {
     setError(null);
   };
@@ -159,10 +189,14 @@ export const OrderProvider = ({ children }) => {
         lowStockProducts,
         paymentTypes,
         orderInfo,
+        canReview,
         setPaymentTypes,
         setOrderInfo,
-        addOrder,
+        setCanReview,
         setUpdated,
+        addOrder,
+        canUserReview,
+        postReview,
         clearErrors,
       }}
     >

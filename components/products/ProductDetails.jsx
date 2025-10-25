@@ -24,6 +24,7 @@ import { INCREASE } from "@/helpers/constants";
 import DOMPurify from "dompurify";
 import { Share2, ShoppingCart, Star, Truck } from "lucide-react";
 import { useSwipeable } from "react-swipeable";
+import OrderContext from "@/context/OrderContext";
 
 // Chargement dynamique des composants
 const BreadCrumbs = dynamic(() => import("@/components/layouts/BreadCrumbs"), {
@@ -592,12 +593,17 @@ function ProductDetails({ product, sameCategoryProducts }) {
   const { user } = useContext(AuthContext);
   const { addItemToCart, updateCart, cart, error, clearError } =
     useContext(CartContext);
+  const { canUserReview, canReview } = useContext(OrderContext);
 
   // État pour l'image sélectionnée
   const [selectedImage, setSelectedImage] = useState(null);
 
   // État pour le feedback d'ajout au panier
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  useEffect(() => {
+    canUserReview(product?._id);
+  }, []);
 
   // Définir l'image sélectionnée au chargement ou quand le produit change
   useEffect(() => {
@@ -639,7 +645,7 @@ function ProductDetails({ product, sameCategoryProducts }) {
             ? `${product.name.substring(0, 40)}...`
             : product.name
           : "Produit",
-        url: `/product/${product._id}`,
+        url: `/shop/${product._id}`,
       },
     ];
   }, [product]);
@@ -806,6 +812,9 @@ function ProductDetails({ product, sameCategoryProducts }) {
             </div>
           )}
         </div>
+
+        {canReview && <NewReview product={product} />}
+        <hr />
 
         {/* Produits connexes */}
         <RelatedProductsCarousel

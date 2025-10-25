@@ -64,6 +64,31 @@ const productSchema = new mongoose.Schema(
         message: "Le stock doit être un nombre entier",
       },
     },
+    ratings: {
+      type: Number,
+      default: 0,
+    },
+    reviews: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        rating: {
+          type: Number,
+          required: true,
+        },
+        comment: {
+          type: String,
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     sold: {
       type: Number,
       default: 0,
