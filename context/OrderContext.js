@@ -166,10 +166,10 @@ export const OrderProvider = ({ children }) => {
   const postReview = async (reviewData) => {
     console.log("In postReview");
     const id = reviewData?.productId;
-    console.log("Id of product");
+    console.log("Id of product", id);
     try {
       const data = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/products/review/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/review/${id}`,
         {
           method: "PUT",
           headers: {
