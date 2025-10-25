@@ -813,7 +813,7 @@ function ProductDetails({ product, sameCategoryProducts }) {
           )}
         </div>
         {/* Laisser un avis et une note */}
-        {canReview && <NewReview product={product} />}\
+        {canReview && <NewReview product={product} />}
         <hr />
         {/* Les avis laisser par les autres utilisateurs */}
         <div className="font-semibold">

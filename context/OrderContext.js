@@ -247,8 +247,6 @@ export const OrderProvider = ({ children }) => {
         return;
       }
 
-      console.log(data);
-
       // Validation de la réponse en cas de succès
       if (!data.success) {
         const error = new Error("Réponse API sans succès malgré status 200");

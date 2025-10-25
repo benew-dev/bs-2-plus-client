@@ -82,7 +82,7 @@ export const GET = withIntelligentRateLimit(
 
       // Chercher les commandes de l'utilisateur contenant ce produit
       const orders = await Order.find({
-        user: user._id,
+        "user.userId": user._id,
         "orderItems.product": id,
       })
         .select("_id orderItems createdAt")
