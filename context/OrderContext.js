@@ -149,7 +149,7 @@ export const OrderProvider = ({ children }) => {
 
   const canUserReview = async (id) => {
     try {
-      const { data } = await axios.get(
+      const { data } = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/can_review/${id}`,
       );
 
@@ -163,9 +163,20 @@ export const OrderProvider = ({ children }) => {
 
   const postReview = async (reviewData) => {
     try {
-      const { data } = await axios.put(
+      const { data } = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/products/${reviewData?.productId}`,
-        reviewData,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            reviewData,
+          }),
+          signal: controller.signal,
+          credentials: "include",
+        },
       );
 
       if (data?.success) {

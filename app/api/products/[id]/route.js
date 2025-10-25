@@ -5,6 +5,7 @@ import Product from "@/backend/models/product";
 import Category from "@/backend/models/category";
 import { captureException } from "@/monitoring/sentry";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
+import isAuthenticatedUser from "@/backend/middlewares/auth";
 
 /**
  * GET /api/products/[id]
@@ -21,7 +22,7 @@ import { withIntelligentRateLimit } from "@/utils/rateLimit";
  * Les utilisateurs authentifiés bénéficient automatiquement de limites doublées
  */
 export const GET = withIntelligentRateLimit(
-  async function (req, { params }) {
+  async function ({ params }) {
     try {
       // Validation simple de l'ID MongoDB
       const { id } = params;
@@ -153,3 +154,27 @@ export const GET = withIntelligentRateLimit(
     },
   },
 );
+
+export async function PUT(req, { params }) {
+  try {
+    // Validation simple de l'ID MongoDB
+    const { id } = params;
+    if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid product ID format",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Vérifier l'authentification
+    await isAuthenticatedUser(req, NextResponse);
+
+    // Connexion DB
+    await dbConnect();
+
+    const body = await req.bdoy();
+  } catch (error) {}
+}

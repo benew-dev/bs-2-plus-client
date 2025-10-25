@@ -12,19 +12,19 @@ const NewReview = ({ product }) => {
   const { user } = useContext(AuthContext);
   const { error, clearErrors, postReview } = useContext(OrderContext);
 
-  useEffect(() => {
-    const userReview = getUserReview(product?.reviews, user?._id);
+  // useEffect(() => {
+  //   const userReview = getUserReview(product?.reviews, user?._id);
 
-    if (userReview) {
-      setRating(userReview?.rating);
-      setComment(userReview?.comment);
-    }
+  //   if (userReview) {
+  //     setRating(userReview?.rating);
+  //     setComment(userReview?.comment);
+  //   }
 
-    if (error) {
-      toast.error(error);
-      clearErrors();
-    }
-  }, [error, user]);
+  //   if (error) {
+  //     toast.error(error);
+  //     clearErrors();
+  //   }
+  // }, [error, user]);
 
   const submitHandler = () => {
     const reviewData = { rating, comment, productId: product?._id };
