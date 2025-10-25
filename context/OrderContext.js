@@ -167,7 +167,7 @@ export const OrderProvider = ({ children }) => {
     const id = reviewData?.productId;
     try {
       const { data } = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}/review`,
         {
           method: "PUT",
           headers: {
