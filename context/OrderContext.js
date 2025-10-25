@@ -164,27 +164,187 @@ export const OrderProvider = ({ children }) => {
   };
 
   const postReview = async (reviewData) => {
-    console.log("In postReview");
-    const id = reviewData?.productId;
-    console.log("Id of product", id);
     try {
-      const data = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/review/${id}`,
+      // Validation légère des données avant l'envoi
+      if (!reviewData || typeof reviewData !== "object") {
+        const error = new Error("Données d'avis manquantes");
+        captureClientError(error, "OrderContext", "postReview", false);
+        setError("Données d'avis manquantes");
+        return;
+      }
+
+      const { productId, rating, comment } = reviewData;
+
+      // Validation du productId
+      if (!productId || typeof productId !== "string") {
+        const error = new Error("ID du produit invalide");
+        captureClientError(error, "OrderContext", "postReview", false);
+        setError("ID du produit invalide");
+        return;
+      }
+
+      // Validation du rating (1-5)
+      const numericRating = Number(rating);
+      if (
+        rating === undefined ||
+        rating === null ||
+        isNaN(numericRating) ||
+        numericRating < 1 ||
+        numericRating > 5 ||
+        !Number.isInteger(numericRating)
+      ) {
+        const error = new Error(
+          `Note invalide: ${rating}. Doit être entre 1 et 5`,
+        );
+        captureClientError(error, "OrderContext", "postReview", false);
+        setError("La note doit être un nombre entre 1 et 5");
+        return;
+      }
+
+      // Validation du commentaire
+      if (!comment || typeof comment !== "string") {
+        const error = new Error("Commentaire manquant ou invalide");
+        captureClientError(error, "OrderContext", "postReview", false);
+        setError("Le commentaire est requis");
+        return;
+      }
+
+      const trimmedComment = comment.trim();
+      if (trimmedComment.length < 10) {
+        const error = new Error(
+          `Commentaire trop court: ${trimmedComment.length} caractères`,
+        );
+        captureClientError(error, "OrderContext", "postReview", false);
+        setError("Le commentaire doit contenir au moins 10 caractères");
+        return;
+      }
+
+      if (trimmedComment.length > 1000) {
+        const error = new Error(
+          `Commentaire trop long: ${trimmedComment.length} caractères`,
+        );
+        captureClientError(error, "OrderContext", "postReview", false);
+        setError("Le commentaire ne doit pas dépasser 1000 caractères");
+        return;
+      }
+
+      // Reset des erreurs avant la requête
+      setError(null);
+
+      // Configuration du timeout pour éviter les requêtes infinies
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/review/${productId}`,
         {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify({
-            reviewData,
+            reviewData: {
+              productId,
+              rating: numericRating,
+              comment: trimmedComment,
+            },
           }),
+          signal: controller.signal,
+          credentials: "include",
         },
       );
 
-      console.log("Data for postReview", data);
+      clearTimeout(timeoutId);
 
-      if (data?.success) {
-        router.replace(`/shop/${id}`);
+      // Parser la réponse JSON
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseError) {
+        const error = new Error("Réponse serveur invalide");
+        captureClientError(error, "OrderContext", "postReview", true);
+        setError("Erreur lors du traitement de la réponse");
+        return;
       }
+
+      // Gestion des erreurs HTTP
+      if (!res.ok) {
+        let errorMessage = "";
+
+        switch (res.status) {
+          case 400:
+            errorMessage =
+              data.message || "Données d'avis invalides. Vérifiez vos entrées.";
+            break;
+          case 401:
+            errorMessage = "Session expirée. Veuillez vous reconnecter.";
+            setTimeout(() => router.push("/login"), 2000);
+            break;
+          case 404:
+            errorMessage = "Produit non trouvé";
+            break;
+          case 429:
+            errorMessage =
+              "Trop de tentatives. Veuillez patienter avant de réessayer.";
+            break;
+          case 503:
+            errorMessage = "Service temporairement indisponible. Réessayez.";
+            break;
+          default:
+            errorMessage = data.message || "Erreur lors de l'envoi de l'avis";
+        }
+
+        // Monitoring pour erreurs HTTP - Critique pour auth/produit inexistant
+        const httpError = new Error(`HTTP ${res.status}: ${errorMessage}`);
+        const isCritical = [401, 404].includes(res.status);
+        captureClientError(httpError, "OrderContext", "postReview", isCritical);
+
+        setError(errorMessage);
+        return;
+      }
+
+      // Validation de la réponse en cas de succès
+      if (!data.success) {
+        const error = new Error(
+          "Réponse API sans succès malgré status 200/201",
+        );
+        captureClientError(error, "OrderContext", "postReview", true);
+        setError(data.message || "Erreur lors de l'envoi de l'avis");
+        return;
+      }
+
+      // Succès - Redirection vers la page du produit
+      console.log("Review posted successfully:", data.data?.meta);
+      router.push(`/product/${productId}`);
     } catch (error) {
-      setError(error?.response?.data?.message);
+      // Gestion des erreurs réseau et système
+      if (error.name === "AbortError") {
+        setError("La requête a pris trop de temps. Veuillez réessayer.");
+        captureClientError(error, "OrderContext", "postReview", false);
+      } else if (
+        error.name === "TypeError" &&
+        error.message.includes("fetch")
+      ) {
+        setError(
+          "Problème de connexion. Vérifiez votre connexion internet et réessayez.",
+        );
+        captureClientError(error, "OrderContext", "postReview", false);
+      } else if (error instanceof SyntaxError) {
+        setError("Erreur de format des données. Réessayez.");
+        captureClientError(error, "OrderContext", "postReview", true);
+      } else {
+        setError(
+          "Une erreur inattendue s'est produite. Veuillez réessayer plus tard.",
+        );
+        captureClientError(error, "OrderContext", "postReview", true);
+      }
+
+      console.error("Review post error:", {
+        message: error.message,
+        name: error.name,
+        productId: reviewData?.productId,
+      });
     }
   };
 
