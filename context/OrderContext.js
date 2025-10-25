@@ -172,15 +172,9 @@ export const OrderProvider = ({ children }) => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/review/${id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
           body: JSON.stringify({
             reviewData,
           }),
-          signal: controller.signal,
-          credentials: "include",
         },
       );
 
