@@ -4,8 +4,6 @@ import { NextResponse } from "next/server";
 
 export async function PUT(req, { params }) {
   try {
-    const body = await req.json();
-
     // Validation simple de l'ID MongoDB
     const { id } = await params;
     if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
@@ -23,5 +21,8 @@ export async function PUT(req, { params }) {
 
     // Connexion DB
     await dbConnect();
+
+    const body = await req.json();
+    const reviewData = body.reviewData;
   } catch (error) {}
 }
