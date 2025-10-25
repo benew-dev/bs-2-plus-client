@@ -24,6 +24,7 @@ import { Share2, ShoppingCart, Star, Truck } from "lucide-react";
 import { useSwipeable } from "react-swipeable";
 import OrderContext from "@/context/OrderContext";
 import NewReview from "./NewReview";
+import Reviews from "./Reviews";
 
 // Chargement dynamique des composants
 const BreadCrumbs = dynamic(() => import("@/components/layouts/BreadCrumbs"), {
