@@ -811,8 +811,16 @@ function ProductDetails({ product, sameCategoryProducts }) {
             </div>
           )}
         </div>
+        {/* Laisser un avis et une note */}
         {canReview && <NewReview product={product} />}\
         <hr />
+        {/* Les avis laisser par les autres utilisateurs */}
+        <div className="font-semibold">
+          <h1 className="text-gray-500 review-title mb-6 mt-10 text-2xl">
+            Other Customers Reviews
+          </h1>
+          <Reviews reviews={product?.reviews} />
+        </div>
         {/* Produits connexes */}
         <RelatedProductsCarousel
           products={sameCategoryProducts}
