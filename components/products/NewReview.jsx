@@ -42,8 +42,10 @@ const NewReview = ({ product }) => {
           <ReactStarsRating
             value={rating}
             isEdit={true}
-            primaryColor="#ffb829"
-            secondaryColor="#ffb829"
+            primaryColor="#fdba74"
+            secondaryColor=" #d1d5db"
+            className="flex"
+            starGap={3}
             count={5}
             onChange={(e) => setRating(e)}
           />
