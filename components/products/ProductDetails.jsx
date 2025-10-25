@@ -25,6 +25,7 @@ import DOMPurify from "dompurify";
 import { Share2, ShoppingCart, Star, Truck } from "lucide-react";
 import { useSwipeable } from "react-swipeable";
 import OrderContext from "@/context/OrderContext";
+import NewReview from "./NewReview";
 
 // Chargement dynamique des composants
 const BreadCrumbs = dynamic(() => import("@/components/layouts/BreadCrumbs"), {
@@ -813,7 +814,8 @@ function ProductDetails({ product, sameCategoryProducts }) {
           )}
         </div>
 
-        {canReview && <NewReview product={product} />}
+        {/* {canReview && <NewReview product={product} />} */}
+        <NewReview product={product} />
         <hr />
 
         {/* Produits connexes */}
