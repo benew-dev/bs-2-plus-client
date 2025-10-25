@@ -7,59 +7,22 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
 import CartContext from "@/context/CartContext";
-import { useSession } from "next-auth/react"; // ✅ AJOUT
+import { useSession } from "next-auth/react";
 
 const FavoriteProducts = () => {
   const { user, toggleFavorite } = useContext(AuthContext);
   const { addItemToCart } = useContext(CartContext);
-  const { data: session } = useSession(); // ✅ AJOUT - Écouter la session
+  const { data: session } = useSession(); // ✅ Écouter la session
   const [isClient, setIsClient] = useState(false);
-  const [localFavorites, setLocalFavorites] = useState([]); // ✅ AJOUT - État local
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // ✅ SYNCHRONISATION - Mettre à jour l'état local quand user ou session change
-  useEffect(() => {
-    const currentUser = session?.user || user;
-    if (currentUser?.favorites) {
-      setLocalFavorites(currentUser.favorites);
-    } else {
-      setLocalFavorites([]);
-    }
-  }, [session?.user?.favorites, user?.favorites]); // ✅ Écouter les deux sources
-
   const handleRemoveFavorite = async (productId, productName) => {
     try {
-      // ✅ OPTIMISTIC UPDATE LOCAL immédiat
-      const previousFavorites = [...localFavorites];
-      const updatedFavorites = localFavorites.filter(
-        (fav) => fav.productId?.toString() !== productId,
-      );
-      setLocalFavorites(updatedFavorites);
-
-      // Appeler l'API
-      const result = await toggleFavorite(
-        productId,
-        productName,
-        null,
-        "remove",
-      );
-
-      // ✅ Si échec, revert
-      if (!result.success) {
-        setLocalFavorites(previousFavorites);
-        console.error("❌ Échec de la suppression du favori");
-      } else {
-        console.log("✅ Favori supprimé avec succès");
-      }
+      await toggleFavorite(productId, productName, null, "remove");
     } catch (error) {
-      // ✅ Revert en cas d'erreur
-      const currentUser = session?.user || user;
-      if (currentUser?.favorites) {
-        setLocalFavorites(currentUser.favorites);
-      }
       console.error("Error removing favorite:", error);
     }
   };
@@ -124,8 +87,10 @@ const FavoriteProducts = () => {
     );
   }
 
-  // ✅ UTILISER localFavorites au lieu de user.favorites
-  const hasFavorites = localFavorites.length > 0;
+  // ✅ LECTURE DIRECTE depuis session ou user - PAS D'ÉTAT LOCAL
+  const currentUser = session?.user || user;
+  const favorites = currentUser?.favorites || [];
+  const hasFavorites = favorites.length > 0;
 
   if (!hasFavorites) {
     return (
@@ -168,8 +133,8 @@ const FavoriteProducts = () => {
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Mes Favoris</h2>
               <p className="text-sm text-gray-500 mt-1">
-                {localFavorites.length} produit
-                {localFavorites.length > 1 ? "s" : ""} dans vos favoris
+                {favorites.length} produit
+                {favorites.length > 1 ? "s" : ""} dans vos favoris
               </p>
             </div>
           </div>
@@ -178,7 +143,7 @@ const FavoriteProducts = () => {
 
       {/* Grid de produits favoris */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {localFavorites.map((favorite) => (
+        {favorites.map((favorite) => (
           <article
             key={favorite.productId}
             className="group bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"

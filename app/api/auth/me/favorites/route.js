@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { revalidatePath } from "next/cache"; // ✅ AJOUT
 import dbConnect from "@/backend/config/dbConnect";
 import isAuthenticatedUser from "@/backend/middlewares/auth";
 import User from "@/backend/models/user";
@@ -8,7 +9,7 @@ import { captureException } from "@/monitoring/sentry";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
 
 /**
- * POST /api/auth/me/favorite
+ * POST /api/auth/me/favorites
  * Ajoute ou retire un produit des favoris de l'utilisateur
  * Rate limit: Configuration intelligente - api.write (30 req/min pour utilisateurs authentifiés)
  *
@@ -137,7 +138,7 @@ export const POST = withIntelligentRateLimit(
         );
       }
 
-      // ✅ NOUVEAU: Extraire la première image
+      // ✅ Extraire la première image
       const productImage = product.images?.[0] || {
         public_id: null,
         url: null,
@@ -170,7 +171,7 @@ export const POST = withIntelligentRateLimit(
           user.favorites.push({
             productId,
             productName: productName.trim(),
-            productImage, // ✅ AJOUT DE L'IMAGE
+            productImage,
           });
           actionPerformed = "added";
           message = "Product added to favorites";
@@ -190,7 +191,7 @@ export const POST = withIntelligentRateLimit(
         user.favorites.push({
           productId,
           productName: productName.trim(),
-          productImage, // ✅ AJOUT DE L'IMAGE
+          productImage,
         });
         actionPerformed = "added";
         message = "Product added to favorites";
@@ -213,6 +214,17 @@ export const POST = withIntelligentRateLimit(
 
       // Sauvegarder l'utilisateur avec les favoris mis à jour
       await user.save();
+
+      // ✅ NOUVEAU: Revalidation des pages concernées
+      try {
+        revalidatePath("/favorites");
+        revalidatePath("/shop");
+        revalidatePath(`/shop/${productId}`);
+        console.log("[API] Pages revalidated successfully");
+      } catch (revalidateError) {
+        console.error("Revalidation error:", revalidateError.message);
+        // Ne pas faire échouer la requête si la revalidation échoue
+      }
 
       // Log de sécurité pour audit
       console.log("🔒 Security event - Favorite updated:", {
@@ -256,7 +268,7 @@ export const POST = withIntelligentRateLimit(
         captureException(error, {
           tags: {
             component: "api",
-            route: "auth/me/favorite",
+            route: "auth/me/favorites",
             user: req.user?.email,
           },
           level: "error",

@@ -1,36 +1,35 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useMemo, useContext } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, ShoppingCart, Star } from "lucide-react";
 import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
 import CartContext from "@/context/CartContext";
-import { useSession } from "next-auth/react"; // ✅ AJOUT
+import { useSession } from "next-auth/react";
 
 const ProductItem = ({ product }) => {
   const { user, toggleFavorite } = useContext(AuthContext);
   const { addItemToCart } = useContext(CartContext);
-  const { data: session } = useSession(); // ✅ AJOUT - Écouter les changements de session
+  const { data: session } = useSession(); // ✅ Écouter les changements de session
 
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-  // ✅ AMÉLIORATION - Synchroniser avec user ET session
-  useEffect(() => {
-    // Utiliser session.user en priorité si disponible, sinon user du contexte
-    const currentUser = session?.user || user;
+  // ✅ UTILISATION DE useMemo pour calculer isFavorite directement
+  const isFavorite = useMemo(() => {
+    const sessionUser = session?.user;
+    const contextUser = user;
+    const currentUser = sessionUser || contextUser;
 
-    if (currentUser?.favorites) {
-      const favorite = currentUser.favorites.some(
-        (fav) => fav.productId?.toString() === product._id?.toString(),
-      );
-      setIsFavorite(favorite);
-    } else {
-      setIsFavorite(false);
+    if (!currentUser?.favorites || !Array.isArray(currentUser.favorites)) {
+      return false;
     }
-  }, [session?.user?.favorites, user?.favorites, product._id]); // ✅ Écouter les deux sources
+
+    return currentUser.favorites.some(
+      (fav) => fav.productId?.toString() === product._id?.toString(),
+    );
+  }, [session, user, product._id]); // ✅ Dépendances claires
 
   const handleToggleFavorite = async (e) => {
     e.preventDefault();
@@ -41,16 +40,11 @@ const ProductItem = ({ product }) => {
       return;
     }
 
-    if (isTogglingFavorite) return;
+    if (favoriteLoading) return;
 
     try {
-      setIsTogglingFavorite(true);
+      setFavoriteLoading(true);
 
-      // ✅ OPTIMISTIC UPDATE LOCAL immédiat
-      const newFavoriteState = !isFavorite;
-      setIsFavorite(newFavoriteState);
-
-      // Appeler l'API
       const result = await toggleFavorite(
         product._id,
         product.name,
@@ -58,19 +52,15 @@ const ProductItem = ({ product }) => {
         "toggle",
       );
 
-      // ✅ Si échec, revert l'état local
       if (!result.success) {
-        setIsFavorite(!newFavoriteState); // Revert
         console.error("❌ Échec de la mise à jour des favoris");
       } else {
         console.log("✅ Favori mis à jour avec succès");
       }
     } catch (error) {
-      // ✅ Revert en cas d'erreur
-      setIsFavorite(!isFavorite);
       console.error("❌ Error toggling favorite:", error);
     } finally {
-      setIsTogglingFavorite(false);
+      setFavoriteLoading(false);
     }
   };
 
@@ -115,10 +105,10 @@ const ProductItem = ({ product }) => {
             </div>
           )}
 
-          {/* ✅ Bouton favori avec état visuel immédiat */}
+          {/* ✅ Bouton favori avec état visuel basé sur useMemo */}
           <button
             onClick={handleToggleFavorite}
-            disabled={isTogglingFavorite || !user}
+            disabled={favoriteLoading || !user}
             className={`absolute top-2 right-2 p-2 rounded-full transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
               isFavorite
                 ? "bg-pink-500 text-white hover:bg-pink-600"
@@ -128,8 +118,8 @@ const ProductItem = ({ product }) => {
               isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
             }
           >
-            {isTogglingFavorite ? (
-              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            {favoriteLoading ? (
+              <div className="w-5 h-5 border-2 border-pink-600 border-t-transparent rounded-full animate-spin" />
             ) : (
               <Heart
                 className={`w-5 h-5 transition-all ${

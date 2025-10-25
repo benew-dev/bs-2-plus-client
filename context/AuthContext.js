@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }) => {
       try {
         await updateSession({
           user: syncedUser,
-          trigger: "update",
         });
         console.log("Session updated successfully");
       } catch (error) {
@@ -200,8 +199,7 @@ export const AuthProvider = ({ children }) => {
 
         if (updateSession) {
           await updateSession({
-            ...data.data.updatedUser,
-            trigger: "update",
+            user: data.data.updatedUser,
           });
         }
 
@@ -347,9 +345,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Dans context/AuthContext.js
-  // Remplacer la fonction toggleFavorite par celle-ci :
-
+  // ✅ VERSION CORRIGÉE avec router.refresh()
   const toggleFavorite = async (
     productId,
     productName,
@@ -371,11 +367,10 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: "Vous devez être connecté" };
       }
 
-      // ✅ SAUVEGARDER L'ÉTAT ORIGINAL pour le revert
-      const originalFavorites = [...(user?.favorites || [])];
-      const originalUser = { ...user };
+      // ✅ BACKUP de l'état original avec copie profonde
+      const backupFavorites = JSON.parse(JSON.stringify(user?.favorites || []));
 
-      // ✅ Déterminer l'action et mettre à jour localement
+      // ✅ Calculer le nouvel état
       const currentFavorites = user?.favorites || [];
       const favoriteIndex = currentFavorites.findIndex(
         (fav) => fav.productId?.toString() === productId,
@@ -387,7 +382,7 @@ export const AuthProvider = ({ children }) => {
         actionToPerform = isCurrentlyInFavorites ? "remove" : "add";
       }
 
-      // ✅ OPTIMISTIC UPDATE - Mise à jour immédiate de l'UI
+      // ✅ OPTIMISTIC UPDATE
       let updatedFavorites;
       if (actionToPerform === "add") {
         updatedFavorites = [
@@ -407,33 +402,27 @@ export const AuthProvider = ({ children }) => {
         updatedFavorites = currentFavorites;
       }
 
-      // ✅ MISE À JOUR IMMÉDIATE du state local
       const optimisticUser = {
         ...user,
         favorites: updatedFavorites,
       };
+
+      // ✅ MISE À JOUR IMMÉDIATE du state local
       setUser(optimisticUser);
 
-      // ✅ MISE À JOUR IMMÉDIATE de la session NextAuth
+      // ✅ SYNCHRONISATION IMMÉDIATE de la session
       if (updateSession && typeof updateSession === "function") {
         try {
-          // Forcer le rafraîchissement avec les nouvelles données
           await updateSession({
-            ...optimisticUser,
-            trigger: "update",
+            user: optimisticUser,
           });
-          console.log(
-            "✅ Session mise à jour immédiatement avec optimistic update",
-          );
+          console.log("[toggleFavorite] Session updated immediately");
         } catch (error) {
-          console.warn(
-            "⚠️ Échec de la mise à jour optimiste de la session:",
-            error,
-          );
+          console.warn("[toggleFavorite] Failed to update session:", error);
         }
       }
 
-      // ✅ Faire la requête API en arrière-plan
+      // ✅ Appel API
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -459,7 +448,15 @@ export const AuthProvider = ({ children }) => {
       clearTimeout(timeoutId);
       const data = await res.json();
 
-      // ✅ GESTION DES ERREURS avec REVERT COMPLET
+      // ✅ LA CLÉ MAGIQUE: router.refresh()
+      try {
+        router.refresh();
+        console.log("[toggleFavorite] Server Components refreshed");
+      } catch (error) {
+        console.warn("[toggleFavorite] Failed to refresh router:", error);
+      }
+
+      // ✅ GESTION DES ERREURS avec ROLLBACK COMPLET
       if (!res.ok) {
         let errorMessage = "";
         switch (res.status) {
@@ -480,20 +477,20 @@ export const AuthProvider = ({ children }) => {
             errorMessage = data.message || "Erreur lors de l'opération";
         }
 
-        // ⚠️ REVERT - Restaurer l'état original
-        console.warn("❌ Erreur API, revert de l'optimistic update");
-        setUser(originalUser);
+        // ⚠️ ROLLBACK avec copie profonde
+        console.warn("❌ Erreur API, rollback de l'optimistic update");
+        const rolledBackUser = { ...user, favorites: backupFavorites };
+        setUser(rolledBackUser);
 
-        // Revert la session aussi
+        // Rollback de la session aussi
         if (updateSession && typeof updateSession === "function") {
           try {
             await updateSession({
-              ...originalUser,
-              trigger: "update",
+              user: rolledBackUser,
             });
-            console.log("✅ Session revertée après erreur");
+            console.log("✅ Session rollback completed");
           } catch (error) {
-            console.warn("⚠️ Échec du revert de la session:", error);
+            console.warn("⚠️ Failed to rollback session:", error);
           }
         }
 
@@ -506,11 +503,10 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: errorMessage };
       }
 
-      // ✅ SUCCÈS - Vérifier que les données serveur correspondent
+      // ✅ SUCCÈS - Synchronisation finale avec les données serveur
       if (data.success) {
         console.log("✅ Favori mis à jour avec succès sur le serveur");
 
-        // ✅ SYNCHRONISATION FINALE avec les données du serveur
         if (data.data?.favorites) {
           const serverUser = {
             ...user,
@@ -519,16 +515,15 @@ export const AuthProvider = ({ children }) => {
 
           setUser(serverUser);
 
-          // Mettre à jour la session avec les données serveur
+          // Synchronisation finale avec les données serveur
           if (updateSession && typeof updateSession === "function") {
             try {
               await updateSession({
-                ...serverUser,
-                trigger: "update",
+                user: serverUser,
               });
-              console.log("✅ Session synchronisée avec les données serveur");
+              console.log("✅ Session synchronized with server data");
             } catch (error) {
-              console.warn("⚠️ Échec de la synchronisation finale:", error);
+              console.warn("⚠️ Failed final synchronization:", error);
             }
           }
         }
@@ -547,31 +542,28 @@ export const AuthProvider = ({ children }) => {
         };
       }
     } catch (error) {
-      // ⚠️ REVERT en cas d'erreur réseau
-      console.error("❌ Erreur réseau, revert de l'optimistic update");
+      // ⚠️ ROLLBACK en cas d'erreur réseau
+      console.error("❌ Erreur réseau, rollback de l'optimistic update");
 
-      // Restaurer l'état original
-      const originalFavorites = user?.favorites || [];
+      const backupFavorites = JSON.parse(JSON.stringify(user?.favorites || []));
       const revertedUser = {
         ...user,
-        favorites: originalFavorites,
+        favorites: backupFavorites,
       };
       setUser(revertedUser);
 
-      // Revert la session
+      // Rollback de la session
       if (updateSession && typeof updateSession === "function") {
         try {
           await updateSession({
-            ...revertedUser,
-            trigger: "update",
+            user: revertedUser,
           });
-          console.log("✅ Session revertée après erreur réseau");
+          console.log("✅ Session rollback after network error");
         } catch (err) {
-          console.warn("⚠️ Échec du revert de la session:", err);
+          console.warn("⚠️ Failed to rollback session:", err);
         }
       }
 
-      // Erreurs réseau/système
       if (error.name === "AbortError") {
         setError("La requête a pris trop de temps");
         toast.error("La requête a pris trop de temps");
