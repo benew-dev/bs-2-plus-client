@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useState } from "react";
 import { toast } from "react-toastify";
-import { useSession } from "next-auth/react"; // ✅ AJOUT
+import { useSession } from "next-auth/react";
 
 const AuthContext = createContext();
 
@@ -14,21 +14,18 @@ export const AuthProvider = ({ children }) => {
   const [updated, setUpdated] = useState(false);
 
   const router = useRouter();
-  // ✅ MODIFICATION: Gestion sécurisée de useSession
   const { data: session, update: updateSession } = useSession();
 
-  // ✅ NOUVELLE fonction pour synchroniser l'utilisateur avec session complète
   const syncUserWithSession = async (updatedUserData) => {
     const currentUser = user;
 
-    // Créer un utilisateur complet avec l'adresse
     const syncedUser = {
       ...currentUser,
       name: updatedUserData.name || currentUser?.name,
       phone: updatedUserData.phone || currentUser?.phone,
       avatar: updatedUserData.avatar || currentUser?.avatar,
-      address: updatedUserData.address || currentUser?.address, // ✅ AJOUT
-      favorites: updatedUserData.favorites || currentUser?.favorites, // ✅ AJOUT FAVORIS
+      address: updatedUserData.address || currentUser?.address,
+      favorites: updatedUserData.favorites || currentUser?.favorites,
     };
 
     console.log("Syncing user with session:", {
@@ -43,6 +40,7 @@ export const AuthProvider = ({ children }) => {
       try {
         await updateSession({
           user: syncedUser,
+          trigger: "update",
         });
         console.log("Session updated successfully");
       } catch (error) {
@@ -60,9 +58,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      // 3. Simple fetch avec timeout court
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s comme vos APIs
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
@@ -82,7 +79,6 @@ export const AuthProvider = ({ children }) => {
 
       const data = await res.json();
 
-      // 4. Gestion simple des erreurs (comme vos APIs)
       if (!res.ok) {
         let errorMessage = "";
         switch (res.status) {
@@ -99,7 +95,6 @@ export const AuthProvider = ({ children }) => {
             errorMessage = data.message || "Erreur lors de l'inscription";
         }
 
-        // Monitoring Sentry pour erreurs HTTP (non-critiques car attendues)
         const httpError = new Error(`HTTP ${res.status}: ${errorMessage}`);
         console.error(httpError, "AuthContext", "registerUser", false);
 
@@ -108,19 +103,16 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // 5. Succès
       if (data.success) {
         toast.success("Inscription réussie!");
         setTimeout(() => router.push("/login"), 1000);
       }
     } catch (error) {
-      // 6. Erreurs réseau/système - Monitoring critique
       if (error.name === "AbortError") {
         setError("La requête a pris trop de temps");
         console.error(error, "AuthContext", "registerUser", false);
       } else {
         setError("Problème de connexion. Vérifiez votre connexion.");
-        // Erreur réseau critique
         console.error(error, "AuthContext", "registerUser", true);
       }
 
@@ -135,7 +127,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      // Validation basique côté client
       if (!name || name.trim() === "") {
         console.log("Le nom est obligatoire");
         setError("Le nom est obligatoire");
@@ -143,7 +134,6 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // Préparer les données à envoyer
       const payload = {
         name: name.trim(),
         phone: phone ? phone.trim() : "",
@@ -151,7 +141,6 @@ export const AuthProvider = ({ children }) => {
         address,
       };
 
-      // Simple fetch avec timeout court
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -173,12 +162,10 @@ export const AuthProvider = ({ children }) => {
 
       const data = await res.json();
 
-      // Gestion simple des erreurs
       if (!res.ok) {
         let errorMessage = "";
         switch (res.status) {
           case 400:
-            // Afficher les erreurs de validation spécifiques si disponibles
             if (data.errors) {
               const firstErrorKey = Object.keys(data.errors)[0];
               errorMessage =
@@ -198,9 +185,8 @@ export const AuthProvider = ({ children }) => {
             errorMessage = data.message || "Erreur lors de la mise à jour";
         }
 
-        // Monitoring pour erreurs HTTP
         const httpError = new Error(`HTTP ${res.status}: ${errorMessage}`);
-        const isCritical = res.status === 401; // Session expirée = critique
+        const isCritical = res.status === 401;
         console.error(httpError, "AuthContext", "updateProfile", isCritical);
 
         setError(errorMessage);
@@ -208,12 +194,10 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // Succès
       if (data.success && data.data?.updatedUser) {
         console.log("User before update:", user);
         console.log("Updated user data:", data.data.updatedUser);
 
-        // ✅ IMPORTANT: Appeler update() de NextAuth pour rafraîchir la session
         if (updateSession) {
           await updateSession({
             ...data.data.updatedUser,
@@ -221,20 +205,17 @@ export const AuthProvider = ({ children }) => {
           });
         }
 
-        // Synchroniser avec la session
         const syncedUser = await syncUserWithSession(data.data.updatedUser);
 
         console.log("User after sync:", syncedUser);
 
         toast.success("Profil mis à jour avec succès!");
 
-        // Attendre un peu que la session soit mise à jour avant de rediriger
         setTimeout(() => {
           router.push("/me");
         }, 500);
       }
     } catch (error) {
-      // Erreurs réseau/système
       if (error.name === "AbortError") {
         setError("La requête a pris trop de temps");
         console.error(error, "AuthContext", "updateProfile", false);
@@ -258,7 +239,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      // Validation basique côté client (juste les essentiels)
       if (!currentPassword || !newPassword) {
         const validationError = new Error("Tous les champs sont obligatoires");
         console.error(validationError, "AuthContext", "updatePassword", false);
@@ -299,7 +279,6 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // Simple fetch avec timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -341,7 +320,6 @@ export const AuthProvider = ({ children }) => {
             errorMessage = data.message || "Erreur lors de la mise à jour";
         }
 
-        // Monitoring pour erreurs HTTP - Critique si session expirée
         const httpError = new Error(`HTTP ${res.status}: ${errorMessage}`);
         const isCritical = res.status === 401;
         console.error(httpError, "AuthContext", "updatePassword", isCritical);
@@ -369,7 +347,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ FAVORIS : Synchronisation instantanée optimisée
+  // ✅ FAVORIS : Version améliorée avec optimistic update ET revert complet
   const toggleFavorite = async (
     productId,
     productName,
@@ -387,7 +365,12 @@ export const AuthProvider = ({ children }) => {
         return { success: false };
       }
 
-      // ✅ MODIFICATION: Déterminer l'action et mettre à jour localement en premier
+      if (!user) {
+        setError("Vous devez être connecté");
+        return { success: false, error: "Vous devez être connecté" };
+      }
+
+      // ✅ Déterminer l'action et mettre à jour localement en premier
       const currentFavorites = user?.favorites || [];
       const favoriteIndex = currentFavorites.findIndex(
         (fav) => fav.productId?.toString() === productId,
@@ -408,6 +391,7 @@ export const AuthProvider = ({ children }) => {
             productId,
             productName: productName.trim(),
             productImage: productImage || { public_id: null, url: null },
+            addedAt: new Date().toISOString(),
           },
         ];
       } else if (actionToPerform === "remove") {
@@ -418,7 +402,7 @@ export const AuthProvider = ({ children }) => {
         updatedFavorites = currentFavorites;
       }
 
-      // Mettre à jour l'état local et la session immédiatement
+      // Mettre à jour l'état local immédiatement
       const updatedUser = {
         ...user,
         favorites: updatedFavorites,
@@ -431,6 +415,7 @@ export const AuthProvider = ({ children }) => {
         try {
           await updateSession({
             user: updatedUser,
+            trigger: "update",
           });
           console.log("Session updated with new favorites");
         } catch (error) {
@@ -438,7 +423,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      // Simple fetch avec timeout
+      // Faire la requête API
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -454,7 +439,7 @@ export const AuthProvider = ({ children }) => {
             productId,
             productName,
             productImage,
-            action: actionToPerform, // Utiliser l'action déterminée
+            action: actionToPerform,
           }),
           signal: controller.signal,
           credentials: "include",
@@ -464,7 +449,7 @@ export const AuthProvider = ({ children }) => {
       clearTimeout(timeoutId);
       const data = await res.json();
 
-      // Gestion des erreurs
+      // Gestion des erreurs avec REVERT
       if (!res.ok) {
         let errorMessage = "";
         switch (res.status) {
@@ -485,26 +470,38 @@ export const AuthProvider = ({ children }) => {
             errorMessage = data.message || "Erreur lors de l'opération";
         }
 
-        // Revert l'optimistic update en cas d'erreur
-        setUser({
+        // ✅ REVERT l'optimistic update en cas d'erreur
+        const revertedUser = {
           ...user,
           favorites: currentFavorites,
-        });
+        };
+        setUser(revertedUser);
 
-        // Monitoring pour erreurs HTTP
+        // Revert la session aussi
+        if (updateSession && typeof updateSession === "function") {
+          try {
+            await updateSession({
+              user: revertedUser,
+              trigger: "update",
+            });
+            console.log("Session reverted after error");
+          } catch (error) {
+            console.warn("Failed to revert session:", error);
+          }
+        }
+
         const httpError = new Error(`HTTP ${res.status}: ${errorMessage}`);
         const isCritical = res.status === 401;
         console.error(httpError, "AuthContext", "toggleFavorite", isCritical);
 
         setError(errorMessage);
+        toast.error(errorMessage);
         return { success: false, error: errorMessage };
       }
 
       // Succès - La UI est déjà à jour grâce à l'optimistic update
       if (data.success) {
-        // Toast de succès selon l'action
-        const isAdded =
-          actionToPerform === "added" || actionToPerform === "add";
+        const isAdded = actionToPerform === "add";
         toast.success(
           isAdded
             ? `${productName} ajouté aux favoris`
@@ -518,12 +515,34 @@ export const AuthProvider = ({ children }) => {
         };
       }
     } catch (error) {
+      // ✅ REVERT l'optimistic update en cas d'erreur réseau
+      const currentFavorites = user?.favorites || [];
+      const revertedUser = {
+        ...user,
+        favorites: currentFavorites,
+      };
+      setUser(revertedUser);
+
+      // Revert la session
+      if (updateSession && typeof updateSession === "function") {
+        try {
+          await updateSession({
+            user: revertedUser,
+            trigger: "update",
+          });
+        } catch (err) {
+          console.warn("Failed to revert session:", err);
+        }
+      }
+
       // Erreurs réseau/système
       if (error.name === "AbortError") {
         setError("La requête a pris trop de temps");
+        toast.error("La requête a pris trop de temps");
         console.error(error, "AuthContext", "toggleFavorite", false);
       } else {
         setError("Problème de connexion. Vérifiez votre connexion.");
+        toast.error("Problème de connexion");
         console.error(error, "AuthContext", "toggleFavorite", true);
       }
 
@@ -537,7 +556,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      // Validation basique côté client
       if (name && (!name.trim() || name.length < 2)) {
         const validationError = new Error(
           "Le nom doit contenir au moins 2 caractères",
@@ -615,13 +633,11 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // Préparer le payload (avec ou sans name/email pour utilisateurs publics)
       const payload = {
         subject: subject.trim(),
         message: message.trim(),
       };
 
-      // Ajouter name et email si fournis (utilisateur non connecté)
       if (name && name.trim()) {
         payload.name = name.trim();
       }
@@ -630,9 +646,8 @@ export const AuthProvider = ({ children }) => {
         payload.email = email.trim();
       }
 
-      // Simple fetch avec timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s pour l'email
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/emails`, {
         method: "POST",
@@ -652,7 +667,6 @@ export const AuthProvider = ({ children }) => {
         let errorMessage = "";
         switch (res.status) {
           case 400:
-            // Afficher les erreurs de validation spécifiques si disponibles
             if (data.errors) {
               const firstErrorKey = Object.keys(data.errors)[0];
               errorMessage = data.errors[firstErrorKey] || "Données invalides";
@@ -677,7 +691,6 @@ export const AuthProvider = ({ children }) => {
             errorMessage = data.message || "Erreur lors de l'envoi";
         }
 
-        // Monitoring pour erreurs HTTP - Critique pour 401/503
         const httpError = new Error(`HTTP ${res.status}: ${errorMessage}`);
         const isCritical = [401, 503].includes(res.status);
         console.error(httpError, "AuthContext", "sendEmail", isCritical);
@@ -708,7 +721,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Ajoutez cette méthode
   const clearUser = () => {
     setUser(null);
     setError(null);
@@ -736,7 +748,7 @@ export const AuthProvider = ({ children }) => {
         sendEmail,
         clearUser,
         clearErrors,
-        syncUserWithSession, // ✅ AJOUT: Exposer la fonction si besoin ailleurs
+        syncUserWithSession,
       }}
     >
       {children}

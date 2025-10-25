@@ -1,219 +1,195 @@
 "use client";
 
-import { memo, useCallback, useContext, useMemo, useState } from "react";
-import { toast } from "react-toastify";
-import Link from "next/link";
+import { useState, useEffect, useContext } from "react";
 import Image from "next/image";
-import { Heart, ShoppingCart } from "lucide-react";
-
-import CartContext from "@/context/CartContext";
-import { INCREASE } from "@/helpers/constants";
+import Link from "next/link";
+import { Heart, ShoppingCart, Star } from "lucide-react";
+import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
+import CartContext from "@/context/CartContext";
 
-const ProductItem = memo(({ product }) => {
-  const { addItemToCart, updateCart, cart } = useContext(CartContext);
+const ProductItem = ({ product }) => {
   const { user, toggleFavorite } = useContext(AuthContext);
+  const { addItemToCart } = useContext(CartContext);
 
-  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
-  if (!product || typeof product !== "object") {
-    return null;
-  }
-
-  const inStock = product.stock > 0;
-  const productId = product._id || "";
-  const productName = product.name || "Produit sans nom";
-  const productPrice = product.price || 0;
-  const productCategory = product.category?.categoryName || "Non catégorisé";
-  const imageUrl = product.images?.[0]?.url || "/images/default_product.png";
-
-  const isFavorite = useMemo(() => {
-    if (!user || !user.favorites || !Array.isArray(user.favorites)) {
-      return false;
+  // Synchroniser l'état local avec les favoris de l'utilisateur
+  useEffect(() => {
+    if (user?.favorites) {
+      const favorite = user.favorites.some(
+        (fav) => fav.productId?.toString() === product._id?.toString(),
+      );
+      setIsFavorite(favorite);
+    } else {
+      setIsFavorite(false);
     }
-    return user.favorites.some(
-      (fav) => fav.productId?.toString() === productId,
-    );
-  }, [user, productId]);
+  }, [user?.favorites, product._id]);
 
-  const addToCartHandler = useCallback(
-    (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleToggleFavorite = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      try {
-        if (!user) {
-          return toast.error(
-            "Connectez-vous pour ajouter des articles à votre panier !",
-          );
-        }
+    if (!user) {
+      toast.info("Connectez-vous pour ajouter aux favoris");
+      return;
+    }
 
-        const isProductInCart = cart.find((i) => i?.productId === productId);
+    if (isTogglingFavorite) return;
 
-        if (isProductInCart) {
-          updateCart(isProductInCart, INCREASE);
-        } else {
-          addItemToCart({
-            product: productId,
-          });
-        }
-      } catch (error) {
-        toast.error("Impossible d'ajouter au panier. Veuillez réessayer.");
-        console.error("Erreur d'ajout au panier:", error);
+    try {
+      setIsTogglingFavorite(true);
+
+      // Optimistic update
+      setIsFavorite(!isFavorite);
+
+      const result = await toggleFavorite(
+        product._id,
+        product.name,
+        product.images?.[0] || { public_id: null, url: null },
+        "toggle",
+      );
+
+      if (!result.success) {
+        // Revert en cas d'échec
+        setIsFavorite(!isFavorite);
       }
-    },
-    [user, cart, productId, updateCart, addItemToCart],
-  );
+    } catch (error) {
+      // Revert en cas d'erreur
+      setIsFavorite(!isFavorite);
+      console.error("Error toggling favorite:", error);
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  };
 
-  const toggleFavoriteHandler = useCallback(
-    async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-      if (!user) {
-        return toast.error(
-          "Connectez-vous pour ajouter des produits à vos favoris !",
-        );
-      }
-
-      setFavoriteLoading(true);
-      try {
-        const productImage = product.images?.[0] || {
-          public_id: null,
-          url: null,
-        };
-
-        await toggleFavorite(productId, productName, productImage);
-      } catch (error) {
-        console.error("Error toggling favorite:", error);
-        toast.error("Erreur lors de la mise à jour des favoris");
-      } finally {
-        setFavoriteLoading(false);
-      }
-    },
-    [user, productId, productName, product.images, toggleFavorite],
-  );
+    try {
+      addItemToCart({ product: product._id });
+      toast.success("Produit ajouté au panier !");
+    } catch (error) {
+      toast.error("Erreur lors de l'ajout au panier");
+      console.error("Error adding to cart:", error);
+    }
+  };
 
   return (
-    <article className="group relative bg-white rounded-lg shadow-sm hover:shadow-sunset-lg transition-all duration-300 overflow-hidden border border-orange-100 w-full transform hover:-translate-y-2">
-      <Link
-        href={`/shop/${productId}`}
-        className="block"
-        aria-label={`Voir les détails du produit: ${productName}`}
-      >
-        {/* Badge de stock avec gradient */}
-        {!inStock && (
-          <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg">
-            Rupture de stock
-          </div>
-        )}
-
-        {/* Bouton Favoris avec gradient */}
-        <button
-          onClick={toggleFavoriteHandler}
-          disabled={favoriteLoading}
-          className={`absolute top-3 right-3 z-10 backdrop-blur-sm p-2 rounded-full shadow-md hover:scale-110 transition-all duration-200 ${
-            isFavorite
-              ? "bg-gradient-to-br from-pink-100 to-purple-100"
-              : "bg-white/90 hover:bg-gradient-sunset-soft"
-          } ${favoriteLoading ? "opacity-60 cursor-not-allowed" : ""}`}
-          aria-label={
-            isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
-          }
-          aria-busy={favoriteLoading}
-        >
-          {favoriteLoading ? (
-            <div className="w-4 h-4 border-2 border-pink-600 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Heart
-              className={`w-4 h-4 transition-colors duration-200 ${
-                isFavorite
-                  ? "fill-pink-500 stroke-pink-500"
-                  : "stroke-gray-700 hover:stroke-pink-500"
-              }`}
+    <article className="group relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300">
+      <Link href={`/shop/${product._id}`} className="block">
+        {/* Image du produit */}
+        <div className="relative w-full h-56 bg-gray-50 overflow-hidden">
+          {product.images?.[0]?.url ? (
+            <Image
+              src={product.images[0].url}
+              alt={product.name}
+              fill
+              className="object-contain group-hover:scale-105 transition-transform duration-500 p-3"
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              priority={false}
             />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-gray-300 text-sm">Pas d'image</div>
+            </div>
           )}
-        </button>
 
-        {/* Image du produit avec effet hover */}
-        <div className="relative w-full h-48 bg-gradient-sunset-soft overflow-hidden">
-          <Image
-            src={imageUrl}
-            alt={productName}
-            title={productName}
-            fill
-            onError={(e) => {
-              e.currentTarget.src = "/images/default_product.png";
-              e.currentTarget.onerror = null;
-            }}
-            className="object-contain group-hover:scale-110 transition-transform duration-500 p-2"
-            priority={false}
-            loading="lazy"
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          />
-          {/* Overlay subtil au survol */}
-          <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          {/* Badge nouveau si créé récemment */}
+          {new Date(product.createdAt) >
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) && (
+            <div className="absolute top-2 left-2 bg-gradient-sunset text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sunset">
+              Nouveau
+            </div>
+          )}
+
+          {/* Bouton favori */}
+          <button
+            onClick={handleToggleFavorite}
+            disabled={isTogglingFavorite || !user}
+            className={`absolute top-2 right-2 p-2 rounded-full transition-all duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
+              isFavorite
+                ? "bg-pink-500 text-white hover:bg-pink-600"
+                : "bg-white/90 text-gray-600 hover:bg-pink-50 hover:text-pink-500"
+            }`}
+            aria-label={
+              isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"
+            }
+          >
+            {isTogglingFavorite ? (
+              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Heart
+                className={`w-5 h-5 transition-all ${
+                  isFavorite ? "fill-current" : ""
+                }`}
+              />
+            )}
+          </button>
         </div>
 
-        {/* Contenu du produit */}
-        <div className="p-4 space-y-2.5">
-          {/* Catégorie avec gradient */}
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-sunset text-white">
-              {productCategory}
-            </span>
-          </div>
-
-          {/* Nom du produit avec hover gradient */}
-          <h3
-            className="font-semibold text-base text-gray-900 line-clamp-2 min-h-[2.5rem] group-hover:text-transparent group-hover:bg-gradient-sunset group-hover:bg-clip-text transition-all"
-            title={productName}
-          >
-            {productName}
+        {/* Informations produit */}
+        <div className="p-4 space-y-3">
+          {/* Nom du produit */}
+          <h3 className="font-semibold text-base text-gray-900 line-clamp-2 min-h-[3rem] group-hover:text-transparent group-hover:bg-gradient-sunset group-hover:bg-clip-text transition-all">
+            {product.name}
           </h3>
 
-          {/* Prix avec gradient */}
-          <div className="pt-1">
-            <span className="text-xl font-bold text-transparent bg-gradient-sunset bg-clip-text">
-              {new Intl.NumberFormat("fr-FR", {
-                style: "currency",
-                currency: "Fdj",
-              }).format(productPrice)}
+          {/* Note et avis */}
+          {product.ratings > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center">
+                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                <span className="ml-1 text-sm font-medium text-gray-700">
+                  {product.ratings.toFixed(1)}
+                </span>
+              </div>
+              <span className="text-xs text-gray-500">
+                ({product.numOfReviews || 0} avis)
+              </span>
+            </div>
+          )}
+
+          {/* Prix */}
+          <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-bold text-transparent bg-gradient-sunset bg-clip-text">
+              {product.price.toFixed(2)} €
+            </p>
+          </div>
+
+          {/* Stock */}
+          <div className="flex items-center gap-2 text-sm">
+            {product.stock > 0 ? (
+              <span className="flex items-center text-green-600">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse-sunset" />
+                En stock ({product.stock})
+              </span>
+            ) : (
+              <span className="flex items-center text-red-600">
+                <span className="w-2 h-2 bg-red-500 rounded-full mr-2" />
+                Rupture de stock
+              </span>
+            )}
+          </div>
+
+          {/* Bouton Ajouter au panier */}
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-sunset text-white rounded-lg hover:shadow-sunset transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none font-medium"
+            aria-label="Ajouter au panier"
+          >
+            <ShoppingCart className="w-5 h-5" />
+            <span>
+              {product.stock === 0 ? "Indisponible" : "Ajouter au panier"}
             </span>
-          </div>
-
-          {/* Bouton d'ajout au panier avec gradient */}
-          <div className="pt-3">
-            <button
-              disabled={!inStock}
-              className={`
-                w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium text-sm
-                transition-all duration-200 shadow-sm
-                ${
-                  inStock
-                    ? "bg-gradient-sunset text-white hover:shadow-sunset active:scale-95 transform hover:-translate-y-0.5"
-                    : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                }
-              `}
-              onClick={addToCartHandler}
-              aria-label={
-                inStock ? "Ajouter au panier" : "Produit indisponible"
-              }
-              aria-disabled={!inStock}
-            >
-              <ShoppingCart className="w-4 h-4" />
-              <span>{inStock ? "Ajouter au panier" : "Indisponible"}</span>
-            </button>
-          </div>
+          </button>
         </div>
-
-        {/* Border glow au hover */}
-        <div className="absolute inset-0 rounded-lg border-2 border-transparent group-hover:border-orange-200 transition-colors pointer-events-none"></div>
       </Link>
     </article>
   );
-});
-
-ProductItem.displayName = "ProductItem";
+};
 
 export default ProductItem;

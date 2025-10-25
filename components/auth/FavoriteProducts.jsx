@@ -12,7 +12,6 @@ const FavoriteProducts = () => {
   const { user, toggleFavorite } = useContext(AuthContext);
   const { addItemToCart } = useContext(CartContext);
   const [isClient, setIsClient] = useState(false);
-  const [removingIds, setRemovingIds] = useState(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -20,16 +19,9 @@ const FavoriteProducts = () => {
 
   const handleRemoveFavorite = async (productId, productName) => {
     try {
-      setRemovingIds((prev) => new Set(prev).add(productId)); // ✅ Ajouter
-      await toggleFavorite(productId, productName, "remove");
+      await toggleFavorite(productId, productName, null, "remove");
     } catch (error) {
       console.error("Error removing favorite:", error);
-    } finally {
-      setRemovingIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(productId); // ✅ Retirer
-        return newSet;
-      });
     }
   };
 
@@ -53,17 +45,42 @@ const FavoriteProducts = () => {
   // Skeleton loading
   if (!isClient || !user) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...Array(3)].map((_, i) => (
-          <div
-            key={i}
-            className="animate-pulse bg-white rounded-lg shadow-sm p-4"
-          >
-            <div className="w-full h-48 bg-gray-200 rounded-lg mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+      <div
+        className="animate-pulse space-y-6"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        {/* Header skeleton */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-pink-100 rounded-full"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/6"></div>
+            </div>
           </div>
-        ))}
+        </div>
+
+        {/* Grid skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+            >
+              <div className="w-full h-48 bg-gray-200"></div>
+              <div className="p-4 space-y-3">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="flex gap-2">
+                  <div className="flex-1 h-10 bg-gray-200 rounded"></div>
+                  <div className="w-10 h-10 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <span className="sr-only">Chargement des favoris...</span>
       </div>
     );
   }
@@ -187,15 +204,10 @@ const FavoriteProducts = () => {
                         favorite.productName,
                       );
                     }}
-                    disabled={removingIds?.has(favorite.productId)} // ✅ Utiliser .has()
-                    className="p-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                     aria-label="Retirer des favoris"
                   >
-                    {removingIds === favorite.productId ? (
-                      <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <Trash2 className="w-5 h-5" />
-                    )}
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
               </div>
