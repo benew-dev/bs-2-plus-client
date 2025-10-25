@@ -41,7 +41,7 @@ export const GET = withIntelligentRateLimit(
       // Récupérer le produit principal
       const product = await Product.findById(id)
         .select(
-          "name description price images category stock sold isActive slug",
+          "name description price images category stock sold isActive reviews ratings slug",
         )
         .populate("category", "categoryName")
         .lean();

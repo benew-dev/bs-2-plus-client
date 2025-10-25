@@ -149,17 +149,161 @@ export const OrderProvider = ({ children }) => {
 
   const canUserReview = async (id) => {
     try {
-      const { data } = await fetch(
+      // Validation légère de l'ID
+      if (!id || typeof id !== "string") {
+        const error = new Error("ID du produit invalide");
+        captureClientError(error, "OrderContext", "canUserReview", false);
+        setError("ID du produit invalide");
+        setCanReview(false);
+        return;
+      }
+
+      // Vérifier le format de l'ID MongoDB (24 caractères hexadécimaux)
+      if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+        const error = new Error(`Format d'ID invalide: ${id}`);
+        captureClientError(error, "OrderContext", "canUserReview", false);
+        setError("Format d'ID du produit invalide");
+        setCanReview(false);
+        return;
+      }
+
+      // Reset des erreurs
+      setError(null);
+
+      // Configuration du timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+      const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/can_review/${id}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+          signal: controller.signal,
+          credentials: "include",
+        },
       );
 
-      console.log("Data for canUserReview", data);
+      clearTimeout(timeoutId);
 
-      if (data?.canReview) {
-        setCanReview(data?.canReview);
+      // Parser la réponse JSON
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseError) {
+        const error = new Error("Réponse serveur invalide");
+        captureClientError(error, "OrderContext", "canUserReview", false);
+        setError("Erreur lors du traitement de la réponse");
+        setCanReview(false);
+        return;
+      }
+
+      // Gestion des erreurs HTTP
+      if (!res.ok) {
+        let errorMessage = "";
+
+        switch (res.status) {
+          case 400:
+            errorMessage = data.message || "ID du produit invalide";
+            break;
+          case 401:
+            errorMessage = "Session expirée. Veuillez vous reconnecter.";
+            setCanReview(false);
+            setTimeout(() => router.push("/login"), 2000);
+            break;
+          case 404:
+            errorMessage =
+              data.code === "USER_NOT_FOUND"
+                ? "Utilisateur non trouvé"
+                : "Produit non trouvé";
+            setCanReview(false);
+            break;
+          case 429:
+            errorMessage = "Trop de tentatives. Veuillez patienter.";
+            break;
+          case 503:
+            errorMessage = "Service temporairement indisponible. Réessayez.";
+            break;
+          default:
+            errorMessage =
+              data.message ||
+              "Erreur lors de la vérification de l'éligibilité à l'avis";
+        }
+
+        // Monitoring pour erreurs HTTP - Critique pour auth/utilisateur
+        const httpError = new Error(`HTTP ${res.status}: ${errorMessage}`);
+        const isCritical = [401, 404].includes(res.status);
+        captureClientError(
+          httpError,
+          "OrderContext",
+          "canUserReview",
+          isCritical,
+        );
+
+        setError(errorMessage);
+        setCanReview(false);
+        return;
+      }
+
+      // Validation de la réponse en cas de succès
+      if (!data.success) {
+        const error = new Error("Réponse API sans succès malgré status 200");
+        captureClientError(error, "OrderContext", "canUserReview", false);
+        setError(
+          data.message ||
+            "Erreur lors de la vérification de l'éligibilité à l'avis",
+        );
+        setCanReview(false);
+        return;
+      }
+
+      // Vérifier la structure des données
+      if (!data.data || typeof data.data.canReview !== "boolean") {
+        const error = new Error("Structure de réponse invalide");
+        captureClientError(error, "OrderContext", "canUserReview", true);
+        setError("Erreur de format des données");
+        setCanReview(false);
+        return;
+      }
+
+      // Succès - Mettre à jour le state
+      setCanReview(data.data.canReview);
+
+      // Log des informations utiles en développement
+      if (process.env.NODE_ENV === "development") {
+        console.log("Can review check result:", {
+          canReview: data.data.canReview,
+          hasAlreadyReviewed: data.data.hasAlreadyReviewed,
+        });
       }
     } catch (error) {
-      setError(error?.response?.data?.message);
+      // Gestion des erreurs réseau et système
+      if (error.name === "AbortError") {
+        setError("La requête a pris trop de temps. Veuillez réessayer.");
+        captureClientError(error, "OrderContext", "canUserReview", false);
+      } else if (
+        error.name === "TypeError" &&
+        error.message.includes("fetch")
+      ) {
+        setError("Problème de connexion. Vérifiez votre connexion internet.");
+        captureClientError(error, "OrderContext", "canUserReview", false);
+      } else if (error instanceof SyntaxError) {
+        setError("Erreur de format des données. Réessayez.");
+        captureClientError(error, "OrderContext", "canUserReview", false);
+      } else {
+        setError("Une erreur inattendue s'est produite. Veuillez réessayer.");
+        captureClientError(error, "OrderContext", "canUserReview", false);
+      }
+
+      setCanReview(false);
+
+      console.error("Can review check error:", {
+        message: error.message,
+        name: error.name,
+        productId: id,
+      });
     }
   };
 
