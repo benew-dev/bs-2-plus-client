@@ -13,7 +13,7 @@ import Image from "next/image";
 import CartContext from "@/context/CartContext";
 import { signOut, useSession } from "next-auth/react";
 import AuthContext from "@/context/AuthContext";
-import { Menu, ShoppingCart, User, X } from "lucide-react";
+import { Menu, ShoppingCart, User, X, Heart } from "lucide-react";
 
 const CART_LOAD_DELAY = 500;
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
@@ -281,6 +281,23 @@ const Header = () => {
                 </span>
               )}
             </Link>
+
+            {/* Icône Favoris - Visible uniquement si connecté */}
+            {user && (
+              <Link
+                href="/favorites"
+                className="relative p-2 text-gray-700 hover:text-pink-600 transition-colors group"
+                aria-label="Mes favoris"
+                title="Voir mes favoris"
+              >
+                <Heart className="w-6 h-6 group-hover:scale-110 group-hover:fill-pink-600 transition-all" />
+                {user?.favorites?.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-gradient-sunset text-white rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center text-xs font-medium shadow-sunset">
+                    {user.favorites.length}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {/* Avatar User ou Icône User */}
             {user ? (

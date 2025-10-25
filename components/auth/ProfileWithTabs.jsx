@@ -1,9 +1,8 @@
 "use client";
 
 import { memo, useState } from "react";
-import { User, Heart } from "lucide-react";
+import { User } from "lucide-react";
 import Profile from "./Profile";
-import FavoriteProducts from "./FavoriteProducts";
 
 const ProfileWithTabs = () => {
   // ✅ Plus de props
@@ -14,11 +13,6 @@ const ProfileWithTabs = () => {
       id: "profile",
       label: "Mon Profil",
       icon: User,
-    },
-    {
-      id: "favorites",
-      label: "Mes Favoris",
-      icon: Heart,
     },
   ];
 
