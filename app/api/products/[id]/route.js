@@ -157,6 +157,11 @@ export const GET = withIntelligentRateLimit(
 
 export async function PUT(req, { params }) {
   try {
+    const body = await req.bdoy();
+
+    console.log("Body for review", body);
+
+    console.log("Params", params);
     // Validation simple de l'ID MongoDB
     const { id } = params;
     if (!id || !/^[0-9a-fA-F]{24}$/.test(id)) {
@@ -174,9 +179,5 @@ export async function PUT(req, { params }) {
 
     // Connexion DB
     await dbConnect();
-
-    const body = await req.bdoy();
-
-    console.log("Body for review", body);
   } catch (error) {}
 }
