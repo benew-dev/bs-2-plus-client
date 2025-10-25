@@ -19,8 +19,6 @@ import CartContext from "@/context/CartContext";
 import { isArrayEmpty } from "@/helpers/helpers";
 import { INCREASE } from "@/helpers/constants";
 
-// Pour la sécurité - nécessite d'installer cette dépendance
-// npm install dompurify
 import DOMPurify from "dompurify";
 import { Share2, ShoppingCart, Star, Truck } from "lucide-react";
 import { useSwipeable } from "react-swipeable";

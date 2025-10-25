@@ -176,5 +176,7 @@ export async function PUT(req, { params }) {
     await dbConnect();
 
     const body = await req.bdoy();
+
+    console.log("Body for review", body);
   } catch (error) {}
 }
