@@ -316,7 +316,7 @@ export const OrderProvider = ({ children }) => {
 
       // Succès - Redirection vers la page du produit
       console.log("Review posted successfully:", data.data?.meta);
-      router.push(`/product/${productId}`);
+      router.push(`/shop/${productId}`);
     } catch (error) {
       // Gestion des erreurs réseau et système
       if (error.name === "AbortError") {
