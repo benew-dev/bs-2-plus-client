@@ -153,6 +153,8 @@ export const OrderProvider = ({ children }) => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/can_review/${id}`,
       );
 
+      console.log("Data for canUserReview", data);
+
       if (data?.canReview) {
         setCanReview(data?.canReview);
       }
@@ -162,9 +164,10 @@ export const OrderProvider = ({ children }) => {
   };
 
   const postReview = async (reviewData) => {
+    const id = reviewData?.productId;
     try {
       const { data } = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/products/${reviewData?.productId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`,
         {
           method: "PUT",
           headers: {
@@ -179,8 +182,10 @@ export const OrderProvider = ({ children }) => {
         },
       );
 
+      console.log("Data for postReview", data);
+
       if (data?.success) {
-        router.replace(`/shop/${reviewData?.productId}`);
+        router.replace(`/shop/${id}`);
       }
     } catch (error) {
       setError(error?.response?.data?.message);
