@@ -72,9 +72,10 @@ export const parseProductSearchParams = (searchParams, defaultType = null) => {
   }
 
   // Note
-  const ratings = searchParams.get("ratings");
-  if (ratings && isValidObjectId(ratings)) {
-    params["ratings[gte]"] = ratings.trim();
+  const ratings =
+    searchParams.get("ratings") || searchParams.get("ratings[gte]");
+  if (ratings) {
+    params["ratings[gte]"] = parseNumber(ratings);
   }
 
   // Prix min/max
