@@ -654,8 +654,6 @@ function ProductDetails({ product, sameCategoryProducts }) {
     return product.stock >= 1;
   }, [product]);
 
-  console.log("Product", product);
-
   // Définir les breadcrumbs une seule fois
   const breadCrumbs = useMemo(() => {
     if (!product) return null;
@@ -663,8 +661,8 @@ function ProductDetails({ product, sameCategoryProducts }) {
     return [
       { name: "Accueil", url: "/" },
       {
-        name: `${product?.type?.nom || "men"}`,
-        url: `/${product?.type?.nom || "/men"}`,
+        name: `${product?.type?.nom === "Homme" ? "Men" : "Women" || "men"}`,
+        url: `/${product?.type?.nom === "Homme" ? "/men" : "/women" || "/men"}`,
       },
       {
         name: product?.category?.categoryName || "Catégorie",
