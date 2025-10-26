@@ -383,6 +383,8 @@ const RelatedProductsCarousel = memo(function RelatedProductsCarousel({
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [slidesPerView, setSlidesPerView] = useState(4);
 
+  console.log("Products in RelatedProductsCarousel", products);
+
   const filteredProducts = useMemo(
     () =>
       products?.filter((product) => product?._id !== currentProductId) || [],
