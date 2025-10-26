@@ -218,7 +218,6 @@ export const POST = withIntelligentRateLimit(
       // ✅ NOUVEAU: Revalidation des pages concernées
       try {
         revalidatePath("/favorites");
-        revalidatePath("/shop");
         revalidatePath(`/shop/${productId}`);
         console.log("[API] Pages revalidated successfully");
       } catch (revalidateError) {

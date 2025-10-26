@@ -41,6 +41,13 @@ class APIFilters {
       };
     }
 
+    if (this.queryStr.get("ratings")) {
+      queryCopy = {
+        ratings: this.queryStr.get("ratings"),
+        ...queryCopy,
+      };
+    }
+
     if (this.queryStr.get("price[gt]")) {
       queryCopy = {
         "price[gt]": this.queryStr.get("price[gt]"),
