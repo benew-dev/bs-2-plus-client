@@ -73,7 +73,6 @@ export const GET = withIntelligentRateLimit(
             code: "PRODUCT_INACTIVE",
             data: {
               canReview: false,
-              reason: "inactive_product",
             },
           },
           { status: 200 },
@@ -91,25 +90,12 @@ export const GET = withIntelligentRateLimit(
       // Vérifier si l'utilisateur a commandé le produit
       const canReview = orders && orders.length > 0;
 
-      // Si l'utilisateur peut laisser un avis, vérifier s'il en a déjà laissé un
-      let hasAlreadyReviewed = false;
-      if (canReview) {
-        const productWithReviews = await Product.findById(id)
-          .select("reviews")
-          .lean();
-
-        hasAlreadyReviewed = productWithReviews.reviews.some(
-          (review) => review.user.toString() === user._id.toString(),
-        );
-      }
-
       // Log pour audit (optionnel, en dev seulement)
       if (process.env.NODE_ENV === "development") {
         console.log("Can review check:", {
           userId: user._id,
           productId: id,
           canReview,
-          hasAlreadyReviewed,
           ordersCount: orders.length,
         });
       }
@@ -118,8 +104,7 @@ export const GET = withIntelligentRateLimit(
         {
           success: true,
           data: {
-            canReview: canReview && !hasAlreadyReviewed,
-            hasAlreadyReviewed,
+            canReview: canReview,
             meta: {
               timestamp: new Date().toISOString(),
             },
