@@ -58,9 +58,12 @@ const NewReview = ({ product }) => {
 
     try {
       await postReview(reviewData);
+      setIsSubmitting(false);
       // Le composant sera rechargé après la redirection
     } catch (err) {
       console.error("Error posting review:", err);
+      setIsSubmitting(false);
+    } finally {
       setIsSubmitting(false);
     }
   };

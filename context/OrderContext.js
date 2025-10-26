@@ -448,8 +448,6 @@ export const OrderProvider = ({ children }) => {
         return;
       }
 
-      console.log("Data from postReview", data);
-
       // Validation de la réponse en cas de succès
       if (!data.success) {
         const error = new Error(
