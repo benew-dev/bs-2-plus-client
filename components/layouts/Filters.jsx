@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import ReactStarsRating from "react-awesome-stars-rating";
 import { getPriceQueryParams, isArrayEmpty } from "@/helpers/helpers";
 
 const Filters = ({ categories, setLocalLoading }) => {
@@ -13,6 +14,9 @@ const Filters = ({ categories, setLocalLoading }) => {
   // État local synchronisé avec les paramètres d'URL
   const [min, setMin] = useState(() => searchParams?.get("min") || "");
   const [max, setMax] = useState(() => searchParams?.get("max") || "");
+  const [rating, setRating] = useState(
+    () => parseFloat(searchParams?.get("ratings")) || 0,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Mémoiser la valeur de catégorie actuelle
@@ -25,6 +29,7 @@ const Filters = ({ categories, setLocalLoading }) => {
   useEffect(() => {
     setMin(searchParams?.get("min") || "");
     setMax(searchParams?.get("max") || "");
+    setRating(parseFloat(searchParams?.get("ratings")) || 0);
   }, [searchParams]);
 
   // Validation des prix mémorisée
@@ -115,19 +120,61 @@ const Filters = ({ categories, setLocalLoading }) => {
     isSubmitting,
   ]);
 
+  // ✅ NOUVEAU : Gestionnaire pour le changement de rating
+  const handleRatingChange = useCallback((newRating) => {
+    // Arrondir à 0.5 (permet 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5)
+    const roundedRating = Math.round(newRating * 2) / 2;
+    setRating(roundedRating);
+  }, []);
+
+  // ✅ NOUVEAU : Gestionnaire pour appliquer le filtre de rating
+  const handleRatingFilter = useCallback(() => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setLocalLoading(true);
+
+    try {
+      const params = new URLSearchParams(searchParams?.toString() || "");
+
+      if (rating > 0) {
+        params.set("ratings", rating.toString());
+      } else {
+        params.delete("ratings");
+      }
+
+      const path = `${pathname}?${params.toString()}`;
+      setIsSubmitting(false);
+      setLocalLoading(false);
+      router.push(path);
+    } catch (error) {
+      toast.error("Une erreur est survenue avec le filtre de note");
+      setLocalLoading(false);
+      setIsSubmitting(false);
+    }
+  }, [rating, searchParams, router, setLocalLoading, pathname, isSubmitting]);
+
+  // ✅ NOUVEAU : Reset du rating
+  const handleResetRating = useCallback(() => {
+    setRating(0);
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    params.delete("ratings");
+    router.push(`${pathname}?${params.toString()}`);
+  }, [searchParams, router, pathname]);
+
   // Réinitialiser les filtres
   const resetFilters = useCallback(() => {
     setIsSubmitting(false);
     setLocalLoading(false);
     setMin("");
     setMax("");
+    setRating(0);
     router.push(`${pathname}`);
   }, [router, setLocalLoading, pathname]);
 
   // Vérifier si des filtres sont actifs
   const hasActiveFilters = useMemo(() => {
-    return min || max || currentCategory;
-  }, [min, max, currentCategory]);
+    return min || max || currentCategory || rating > 0;
+  }, [min, max, currentCategory, rating]);
 
   return (
     <aside className="w-full">
@@ -244,6 +291,61 @@ const Filters = ({ categories, setLocalLoading }) => {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* ✅ NOUVEAU : Note (Ratings) */}
+          <div className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm">
+            <h3 className="font-semibold mb-3 text-gray-900">Note minimum</h3>
+
+            <div className="flex flex-col items-center gap-3 mb-3">
+              <ReactStarsRating
+                value={rating}
+                isEdit={true}
+                isHalf={true}
+                primaryColor="#f97316"
+                secondaryColor="#d1d5db"
+                className="flex"
+                starGap={6}
+                count={5}
+                size={28}
+                onChange={handleRatingChange}
+              />
+
+              {rating > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-orange-600">
+                    {rating.toFixed(1)} étoiles et plus
+                  </span>
+                  <button
+                    onClick={handleResetRating}
+                    className="text-xs text-gray-500 hover:text-red-600 underline"
+                    disabled={isSubmitting}
+                  >
+                    Effacer
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button
+              className={`w-full py-2 px-4 ${
+                isSubmitting || rating === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-sunset hover:shadow-sunset-md hover-lift"
+              } text-white cursor-pointer rounded-md transition-all font-semibold`}
+              onClick={handleRatingFilter}
+              aria-label="Appliquer le filtre de note"
+              disabled={isSubmitting || rating === 0}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Chargement...
+                </span>
+              ) : (
+                "Appliquer"
+              )}
+            </button>
           </div>
 
           {/* Bouton réinitialiser mobile */}
