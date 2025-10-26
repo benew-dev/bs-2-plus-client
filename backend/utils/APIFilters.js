@@ -42,7 +42,6 @@ class APIFilters {
     }
 
     if (this.queryStr.get("ratings[gte]")) {
-      console.log("In APIFilters", this.queryStr.get("ratings[gte]"));
       queryCopy = {
         "ratings[gte]": this.queryStr.get("ratings[gte]"),
         ...queryCopy,
@@ -91,7 +90,6 @@ class APIFilters {
       }
     }
 
-    console.log("Filters Output", output);
     // { price: { $gte: 100, $lte: 1000 } }
 
     this.query = this.query.find(output);
