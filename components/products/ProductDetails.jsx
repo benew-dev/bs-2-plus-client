@@ -666,7 +666,7 @@ function ProductDetails({ product, sameCategoryProducts }) {
       },
       {
         name: product?.category?.categoryName || "Catégorie",
-        url: `/${product?.type?.nom || "/men"}?category=${product?.category?._id || ""}`,
+        url: `/${product?.type?.nom === "Homme" ? "/men" : "/women" || "/men"}?category=${product?.category?._id || ""}`,
       },
       {
         name: product.name
