@@ -89,6 +89,8 @@ class APIFilters {
         output[prop][`$${operator}`] = queryCopy[key];
       }
     }
+
+    console.log("Filters Output", output);
     // { price: { $gte: 100, $lte: 1000 } }
 
     this.query = this.query.find(output);
