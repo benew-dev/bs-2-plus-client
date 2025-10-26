@@ -669,12 +669,12 @@ function ProductDetails({ product, sameCategoryProducts }) {
         url: `/${product?.type?.nom === "Homme" ? "/men" : "/women" || "/men"}?category=${product?.category?._id || ""}`,
       },
       {
-        name: product.name
-          ? product.name.length > 40
-            ? `${product.name.substring(0, 40)}...`
-            : product.name
+        name: product?.name
+          ? product?.name?.length > 40
+            ? `${product?.name?.substring(0, 40)}...`
+            : product?.name
           : "Produit",
-        url: `/shop/${product._id}`,
+        url: `/shop/${product?._id}`,
       },
     ];
   }, [product]);
@@ -682,7 +682,7 @@ function ProductDetails({ product, sameCategoryProducts }) {
   // Gérer l'ajout au panier
   const handleAddToCart = useCallback(() => {
     // Sécurité et validation
-    if (!product || !product._id) {
+    if (!product || !product?._id) {
       toast.error("Produit invalide");
       return;
     }
@@ -704,14 +704,14 @@ function ProductDetails({ product, sameCategoryProducts }) {
     setIsAddingToCart(true);
 
     try {
-      const isProductInCart = cart.find((i) => i?.productId === product._id);
+      const isProductInCart = cart.find((i) => i?.productId === product?._id);
 
       if (isProductInCart) {
         updateCart(isProductInCart, INCREASE);
         toast.success("Quantité mise à jour dans votre panier");
       } else {
         addItemToCart({
-          product: product._id,
+          product: product?._id,
         });
         toast.success("Produit ajouté à votre panier");
       }
