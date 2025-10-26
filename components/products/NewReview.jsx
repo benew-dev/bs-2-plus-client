@@ -1,80 +1,181 @@
-import AuthContext from "@/context/AuthContext";
-import OrderContext from "@/context/OrderContext";
-import ReactStarsRating from "react-awesome-stars-rating";
-import { getUserReview } from "@/helpers/helpers";
+"use client";
+
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import ReactStarsRating from "react-awesome-stars-rating";
+import { MessageSquare, Star } from "lucide-react";
+
+import AuthContext from "@/context/AuthContext";
+import OrderContext from "@/context/OrderContext";
+import { getUserReview } from "@/helpers/helpers";
 
 const NewReview = ({ product }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { user } = useContext(AuthContext);
   const { error, clearErrors, postReview } = useContext(OrderContext);
 
-  // useEffect(() => {
-  //   const userReview = getUserReview(product?.reviews, user?._id);
+  useEffect(() => {
+    const userReview = getUserReview(product?.reviews, user?._id);
 
-  //   if (userReview) {
-  //     setRating(userReview?.rating);
-  //     setComment(userReview?.comment);
-  //   }
+    if (userReview) {
+      setRating(userReview?.rating);
+      setComment(userReview?.comment);
+    }
+    if (error) {
+      toast.error(error);
+      clearErrors();
+      setIsSubmitting(false);
+    }
+  }, [error, clearErrors]);
 
-  //   if (error) {
-  //     toast.error(error);
-  //     clearErrors();
-  //   }
-  // }, [error, user]);
+  const handleSubmit = async () => {
+    // Validation côté client
+    if (rating === 0) {
+      toast.error("Veuillez sélectionner une note");
+      return;
+    }
 
-  const submitHandler = () => {
-    console.log("Starting to handle submit post");
-    const reviewData = { rating, comment, productId: product?._id };
-    console.log(
-      "Passing review data to postReview from OrderContext",
-      reviewData,
-    );
-    postReview(reviewData);
+    if (!comment || comment.trim().length < 10) {
+      toast.error("Votre commentaire doit contenir au moins 10 caractères");
+      return;
+    }
+
+    if (comment.trim().length > 1000) {
+      toast.error("Votre commentaire ne doit pas dépasser 1000 caractères");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const reviewData = {
+      rating,
+      comment: comment.trim(),
+      productId: product?._id,
+    };
+
+    try {
+      await postReview(reviewData);
+      // Le composant sera rechargé après la redirection
+    } catch (err) {
+      console.error("Error posting review:", err);
+      setIsSubmitting(false);
+    }
   };
 
-  return (
-    <div>
-      <hr className="my-4" />
-      <h1 className="text-gray-500 review-title my-5 text-2xl">Your Review</h1>
+  if (!user) {
+    return (
+      <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-md">
+        <p className="text-orange-800">
+          Vous devez être connecté pour laisser un avis.
+        </p>
+      </div>
+    );
+  }
 
-      <h3>Rating</h3>
-      <div className="mb-4 mt-3">
-        <div className="ratings">
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-8">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 rounded-full bg-gradient-sunset flex items-center justify-center">
+          <MessageSquare className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Votre avis</h2>
+          <p className="text-sm text-gray-600">
+            Partagez votre expérience avec ce produit
+          </p>
+        </div>
+      </div>
+
+      {/* Rating Section */}
+      <div className="mb-6">
+        <label className="block text-sm font-semibold text-gray-700 mb-3">
+          Votre note <span className="text-red-500">*</span>
+        </label>
+        <div className="flex items-center gap-4">
           <ReactStarsRating
             value={rating}
             isEdit={true}
-            primaryColor="#fdba74"
-            secondaryColor=" #d1d5db"
+            primaryColor="#f97316"
+            secondaryColor="#d1d5db"
             className="flex"
-            starGap={3}
+            starGap={8}
             count={5}
-            onChange={(e) => setRating(e)}
+            size={32}
+            onChange={(newRating) => setRating(newRating)}
           />
+          {rating > 0 && (
+            <span className="text-sm font-medium text-gray-600">
+              {rating} / 5
+            </span>
+          )}
         </div>
       </div>
-      <div className="mb-4 mt-5">
-        <label className="block mb-1"> Comments </label>
+
+      {/* Comment Section */}
+      <div className="mb-6">
+        <label
+          htmlFor="review-comment"
+          className="block text-sm font-semibold text-gray-700 mb-2"
+        >
+          Votre commentaire <span className="text-red-500">*</span>
+        </label>
         <textarea
-          rows="4"
-          className="appearance-none border border-gray-200 bg-gray-100 rounded-md py-2 px-3 hover:border-gray-400 focus:outline-none focus:border-gray-400 w-1/3"
-          placeholder="Your review"
-          name="description"
+          id="review-comment"
+          rows="5"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+          placeholder="Décrivez votre expérience avec ce produit..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          required
-        ></textarea>
+          disabled={isSubmitting}
+          maxLength={1000}
+        />
+        <div className="flex justify-between items-center mt-2">
+          <p className="text-xs text-gray-500">
+            Minimum 10 caractères, maximum 1000 caractères
+          </p>
+          <p
+            className={`text-xs ${
+              comment.length > 1000
+                ? "text-red-600 font-semibold"
+                : "text-gray-500"
+            }`}
+          >
+            {comment.length} / 1000
+          </p>
+        </div>
       </div>
 
+      {/* Submit Button */}
       <button
-        className="mt-3 mb-5 px-4 py-2 text-center inline-block text-white bg-yellow-500 border border-transparent rounded-md hover:bg-yellow-600 w-1/3"
-        onClick={() => submitHandler()}
+        onClick={handleSubmit}
+        disabled={isSubmitting || rating === 0 || comment.trim().length < 10}
+        className="w-full sm:w-auto px-8 py-3 bg-gradient-sunset text-white font-semibold rounded-lg hover:shadow-sunset-lg hover-lift transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:transform-none flex items-center justify-center gap-2"
+        aria-label="Publier votre avis"
       >
-        Post Review
+        {isSubmitting ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span>Publication en cours...</span>
+          </>
+        ) : (
+          <>
+            <Star className="w-5 h-5" />
+            <span>Publier mon avis</span>
+          </>
+        )}
       </button>
+
+      {/* Info Message */}
+      <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <p className="text-xs text-gray-600">
+          <strong>Note :</strong> Votre avis sera visible publiquement après
+          validation. Merci de rester respectueux et constructif.
+        </p>
+      </div>
     </div>
   );
 };

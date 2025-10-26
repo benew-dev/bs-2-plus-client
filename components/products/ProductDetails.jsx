@@ -20,6 +20,7 @@ import { isArrayEmpty } from "@/helpers/helpers";
 import { INCREASE } from "@/helpers/constants";
 
 import DOMPurify from "dompurify";
+import ReactStarsRating from "react-awesome-stars-rating";
 import { Share2, ShoppingCart, Star, Truck } from "lucide-react";
 import { useSwipeable } from "react-swipeable";
 import OrderContext from "@/context/OrderContext";
@@ -258,7 +259,32 @@ const ProductInfo = memo(function ProductInfo({
       </div>
 
       {/* Informations supplémentaires */}
-      <ul className="mb-5 text-gray-600">
+      <ul className="mb-5 text-gray-600 space-y-3">
+        {/* Note moyenne */}
+        {product?.ratings > 0 && (
+          <li className="flex items-center">
+            <span className="font-medium w-36 inline-block">Note moyenne:</span>
+            <div className="flex items-center gap-2">
+              <ReactStarsRating
+                value={product.ratings}
+                isEdit={false}
+                primaryColor="#f97316"
+                secondaryColor="#d1d5db"
+                className="flex"
+                starGap={4}
+                count={5}
+                size={20}
+              />
+              <span className="font-semibold text-orange-600">
+                {product.ratings.toFixed(1)} / 5
+              </span>
+              <span className="text-sm text-gray-500">
+                ({product.reviews?.length || 0} avis)
+              </span>
+            </div>
+          </li>
+        )}
+
         <li className="mb-2 flex">
           <span className="font-medium w-36 inline-block">Disponibilité:</span>
           {inStock ? (
