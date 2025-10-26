@@ -662,11 +662,11 @@ function ProductDetails({ product, sameCategoryProducts }) {
       { name: "Accueil", url: "/" },
       {
         name: `${product?.type?.nom === "Homme" ? "Men" : "Women" || "men"}`,
-        url: `/${product?.type?.nom === "Homme" ? "/men" : "/women" || "/men"}`,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${product?.type?.nom === "Homme" ? "/men" : "/women" || "/men"}`,
       },
       {
         name: product?.category?.categoryName || "Catégorie",
-        url: `/${product?.type?.nom === "Homme" ? "/men" : "/women" || "/men"}?category=${product?.category?._id || ""}`,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${product?.type?.nom === "Homme" ? "/men" : "/women" || "/men"}?category=${product?.category?._id || ""}`,
       },
       {
         name: product?.name
