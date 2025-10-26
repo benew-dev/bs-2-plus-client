@@ -83,9 +83,7 @@ export const GET = withIntelligentRateLimit(
       const orders = await Order.find({
         "user.userId": user._id,
         "orderItems.product": id,
-      })
-        .select("_id orderItems createdAt")
-        .lean();
+      }).lean();
 
       console.log("Orders Found for this product", orders);
 
