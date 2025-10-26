@@ -44,6 +44,24 @@ export const priceFiltersSchema = yup.object().shape({
     }),
 });
 
+// ✅ NOUVEAU : Schéma de filtres de ratings
+export const ratingsFiltersSchema = yup.object().shape({
+  ratings: yup
+    .number()
+    .nullable()
+    .min(0, "Note minimum doit être >= 0")
+    .max(5, "Note maximum est 5")
+    .test(
+      "valid-decimal",
+      "Note doit être un multiple de 0.5",
+      function (value) {
+        if (!value) return true;
+        // Vérifier que c'est un multiple de 0.5 (0, 0.5, 1, 1.5, 2, ..., 5)
+        return (value * 2) % 1 === 0;
+      },
+    ),
+});
+
 // Schéma de catégorie
 export const categorySchema = yup.object().shape({
   category: yup
@@ -57,12 +75,13 @@ export const categorySchema = yup.object().shape({
     ),
 });
 
-// Schéma complet des filtres
+// ✅ MODIFIÉ : Schéma complet des filtres avec ratings[gte]
 export const productFiltersSchema = yup.object().shape({
   keyword: yup.string().nullable().transform(sanitizeString),
   category: categorySchema.fields.category,
   "price[gt]": priceFiltersSchema.fields.min,
   "price[lt]": priceFiltersSchema.fields.max,
+  "ratings[gte]": ratingsFiltersSchema.fields.ratings, // ✅ AJOUTÉ
   page: yup
     .number()
     .nullable()
@@ -79,7 +98,15 @@ export const productReviewSchema = yup.object().shape({
     .required("Note requise")
     .min(1, "Note minimum 1")
     .max(5, "Note maximum 5")
-    .integer("Note doit être entière"),
+    .test(
+      "valid-decimal",
+      "Note doit être un multiple de 0.5",
+      function (value) {
+        if (!value) return true;
+        // Vérifier que c'est un multiple de 0.5
+        return (value * 2) % 1 === 0;
+      },
+    ),
 
   title: yup
     .string()
@@ -102,6 +129,8 @@ export const productReviewSchema = yup.object().shape({
 export const validateProductSearch = (data) => validate(searchSchema, data);
 export const validatePriceFilters = (data) =>
   validate(priceFiltersSchema, data);
+export const validateRatingsFilters = (data) =>
+  validate(ratingsFiltersSchema, data); // ✅ AJOUTÉ
 export const validateCategory = (data) => validate(categorySchema, data);
 export const validateProductFilters = (data) =>
   validate(productFiltersSchema, data);
