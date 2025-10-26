@@ -144,7 +144,7 @@ export const parseCallbackUrl = (url) => {
 export const getUserReview = (reviews, userId) => {
   let userReview = null;
 
-  reviews.forEach((review) => {
+  reviews?.forEach((review) => {
     if (review?.user?._id === userId) {
       userReview = review;
     }
