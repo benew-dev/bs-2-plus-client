@@ -5,7 +5,6 @@ import ReactStarsRating from "react-awesome-stars-rating";
 import { MessageSquare, Calendar } from "lucide-react";
 
 const Reviews = ({ reviews }) => {
-  console.log("Reviews", reviews);
   // Vérification si reviews existe et n'est pas vide
   if (!reviews || reviews.length === 0) {
     return (

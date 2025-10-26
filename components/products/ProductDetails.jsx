@@ -300,9 +300,6 @@ const ProductInfo = memo(function ProductInfo({
               <span className="font-semibold text-orange-600">
                 {product.ratings.toFixed(1)} / 5
               </span>
-              <span className="text-sm text-gray-500">
-                ({product.reviews?.length || 0} avis)
-              </span>
             </div>
           </li>
         )}
@@ -382,8 +379,6 @@ const RelatedProductsCarousel = memo(function RelatedProductsCarousel({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [slidesPerView, setSlidesPerView] = useState(4);
-
-  console.log("Products in RelatedProductsCarousel", products);
 
   const filteredProducts = useMemo(
     () =>

@@ -144,9 +144,6 @@ const ProductItem = ({ product }) => {
                   {product.ratings.toFixed(1)}
                 </span>
               </div>
-              <span className="text-xs text-gray-500">
-                ({product.numOfReviews || 0} avis)
-              </span>
             </div>
           )}
 
