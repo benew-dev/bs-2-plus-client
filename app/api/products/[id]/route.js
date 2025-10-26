@@ -4,6 +4,7 @@ import dbConnect from "@/backend/config/dbConnect";
 import Product from "@/backend/models/product";
 import Type from "@/backend/models/type";
 import Category from "@/backend/models/category";
+import User from "@/backend/models/user";
 import { captureException } from "@/monitoring/sentry";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
 
@@ -46,6 +47,7 @@ export const GET = withIntelligentRateLimit(
         )
         .populate("type", "nom")
         .populate("category", "categoryName")
+        .populate("user", "name")
         .lean();
 
       // Si le produit n'existe pas
@@ -68,7 +70,7 @@ export const GET = withIntelligentRateLimit(
             _id: { $ne: id },
             isActive: true,
           })
-            .select("name price images slug")
+            .select("name price images ratings slug")
             .limit(4)
             .lean();
         } catch (error) {
