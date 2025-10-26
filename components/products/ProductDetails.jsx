@@ -663,7 +663,7 @@ function ProductDetails({ product, sameCategoryProducts }) {
     return [
       { name: "Accueil", url: "/" },
       {
-        name: `${product?.type?.nom || "/men"}`,
+        name: `${product?.type?.nom || "men"}`,
         url: `/${product?.type?.nom || "/men"}`,
       },
       {

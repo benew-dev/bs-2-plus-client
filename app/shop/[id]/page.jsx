@@ -212,24 +212,20 @@ const ProductDetailsPage = async ({ params }) => {
   try {
     // Validation de l'ID
     if (!id || typeof id !== "string") {
-      console.log("Id not exists");
       throw new ProductNotFoundError("invalid");
     }
 
     // Sanitization basique de l'ID (à adapter selon votre format d'ID)
     if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
-      console.log("Id exists but not in the right format");
       throw new ProductNotFoundError("invalid format");
     }
 
     const data = await getProductDetails(id).catch((error) => {
-      console.log("Response from server");
       throw new ProductFetchError(id, error);
     });
 
     // Vérifier si le produit existe
     if (!data?.product) {
-      console.log("Product not found with this Id");
       throw new ProductNotFoundError(id);
     }
 
