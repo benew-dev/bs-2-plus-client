@@ -51,7 +51,7 @@ const NewReview = ({ product }) => {
     setIsSubmitting(true);
 
     const reviewData = {
-      rating,
+      rating, // ✅ Peut maintenant être 1, 1.5, 2, 2.5, etc.
       comment: comment.trim(),
       productId: product?._id,
     };
@@ -93,7 +93,7 @@ const NewReview = ({ product }) => {
         </div>
       </div>
 
-      {/* Rating Section */}
+      {/* Rating Section - ✅ Permettre les demi-étoiles */}
       <div className="mb-6">
         <label className="block text-sm font-semibold text-gray-700 mb-3">
           Votre note <span className="text-red-500">*</span>
@@ -102,6 +102,7 @@ const NewReview = ({ product }) => {
           <ReactStarsRating
             value={rating}
             isEdit={true}
+            isHalf={true} // ✅ AJOUT: Activer les demi-étoiles
             primaryColor="#f97316"
             secondaryColor="#d1d5db"
             className="flex"
@@ -112,10 +113,13 @@ const NewReview = ({ product }) => {
           />
           {rating > 0 && (
             <span className="text-sm font-medium text-gray-600">
-              {rating} / 5
+              {rating.toFixed(1)} / 5
             </span>
           )}
         </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Vous pouvez donner une note avec des demi-étoiles (ex: 3.5)
+        </p>
       </div>
 
       {/* Comment Section */}

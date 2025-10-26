@@ -80,7 +80,7 @@ export const PUT = withIntelligentRateLimit(
         );
       }
 
-      // Validation du rating - Doit être un nombre entre 1 et 5
+      // ✅ MODIFICATION: Validation du rating - Autoriser les décimales
       if (rating === undefined || rating === null) {
         return NextResponse.json(
           {
@@ -95,17 +95,17 @@ export const PUT = withIntelligentRateLimit(
       // Convertir en nombre si c'est une chaîne
       const numericRating = Number(rating);
 
+      // Vérifier que c'est un nombre valide entre 1 et 5
       if (
         isNaN(numericRating) ||
         !Number.isFinite(numericRating) ||
         numericRating < 1 ||
-        numericRating > 5 ||
-        !Number.isInteger(numericRating)
+        numericRating > 5
       ) {
         return NextResponse.json(
           {
             success: false,
-            message: "Rating must be an integer between 1 and 5",
+            message: "Rating must be a number between 1 and 5",
             code: "INVALID_RATING",
             data: {
               min: 1,
@@ -117,6 +117,9 @@ export const PUT = withIntelligentRateLimit(
           { status: 400 },
         );
       }
+
+      // Arrondir à 0.5 (permet 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5)
+      const roundedRating = Math.round(numericRating * 2) / 2;
 
       // Validation du commentaire
       if (!comment) {
@@ -247,7 +250,7 @@ export const PUT = withIntelligentRateLimit(
 
         product.reviews[existingReviewIndex] = {
           user: user._id,
-          rating: numericRating,
+          rating: roundedRating, // ✅ Utiliser la note arrondie
           comment: sanitizedComment,
           createdAt: product.reviews[existingReviewIndex].createdAt,
           updatedAt: new Date(),
@@ -256,13 +259,13 @@ export const PUT = withIntelligentRateLimit(
         // Nouvel avis
         product.reviews.push({
           user: user._id,
-          rating: numericRating,
+          rating: roundedRating, // ✅ Utiliser la note arrondie
           comment: sanitizedComment,
           createdAt: new Date(),
         });
       }
 
-      // Recalculer la note moyenne
+      // Recalculer la note moyenne avec une décimale
       const totalReviews = product.reviews.length;
       const sumRatings = product.reviews.reduce(
         (sum, review) => sum + review.rating,
@@ -279,7 +282,7 @@ export const PUT = withIntelligentRateLimit(
         userName: user.name,
         productId: id,
         productName: product.name,
-        rating: numericRating,
+        rating: roundedRating,
         isUpdate,
         oldRating,
         newAverageRating: product.ratings,
@@ -298,7 +301,7 @@ export const PUT = withIntelligentRateLimit(
             : "Review added successfully",
           data: {
             review: {
-              rating: numericRating,
+              rating: roundedRating,
               comment: sanitizedComment,
               user: {
                 id: user._id,

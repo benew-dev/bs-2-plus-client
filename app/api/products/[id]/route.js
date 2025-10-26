@@ -40,14 +40,17 @@ export const GET = withIntelligentRateLimit(
       // Connexion DB
       await dbConnect();
 
-      // Récupérer le produit principal
+      // ✅ MODIFICATION: Ajouter avatar.url au populate user
       const product = await Product.findById(id)
         .select(
           "name description price images type category stock sold isActive reviews ratings slug",
         )
         .populate("type", "nom")
         .populate("category", "categoryName")
-        .populate("user", "name")
+        .populate({
+          path: "reviews.user",
+          select: "name avatar.url", // ✅ Récupérer nom + avatar
+        })
         .lean();
 
       // Si le produit n'existe pas
@@ -61,7 +64,7 @@ export const GET = withIntelligentRateLimit(
         );
       }
 
-      // Récupérer les produits similaires (même catégorie)
+      // ✅ MODIFICATION: Récupérer les produits similaires avec ratings
       let sameCategoryProducts = [];
       if (product.category) {
         try {
@@ -70,7 +73,7 @@ export const GET = withIntelligentRateLimit(
             _id: { $ne: id },
             isActive: true,
           })
-            .select("name price images ratings slug")
+            .select("name price images ratings slug") // ✅ ratings déjà inclus
             .limit(4)
             .lean();
         } catch (error) {

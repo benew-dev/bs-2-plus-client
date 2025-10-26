@@ -44,6 +44,7 @@ const Reviews = ({ reviews }) => {
           {/* Header - User Info */}
           <div className="flex items-start gap-4 mb-4">
             <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 border-2 border-orange-200">
+              {/* ✅ MODIFICATION: Utiliser l'avatar de l'utilisateur */}
               <Image
                 src={review?.user?.avatar?.url || "/images/default.png"}
                 alt={review?.user?.name || "Utilisateur"}
@@ -65,7 +66,7 @@ const Reviews = ({ reviews }) => {
             </div>
           </div>
 
-          {/* Rating */}
+          {/* Rating - ✅ Affichage correct des décimales */}
           <div className="flex items-center gap-3 mb-4">
             <ReactStarsRating
               value={review?.rating || 0}
@@ -78,7 +79,7 @@ const Reviews = ({ reviews }) => {
               size={18}
             />
             <span className="text-sm font-semibold text-orange-600">
-              {review?.rating || 0}/5
+              {review?.rating?.toFixed(1) || 0}/5
             </span>
           </div>
 

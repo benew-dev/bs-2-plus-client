@@ -327,15 +327,14 @@ export const OrderProvider = ({ children }) => {
         return;
       }
 
-      // Validation du rating (1-5)
+      // ✅ MODIFICATION: Autoriser les décimales (ex: 2.5, 3.5)
       const numericRating = Number(rating);
       if (
         rating === undefined ||
         rating === null ||
         isNaN(numericRating) ||
         numericRating < 1 ||
-        numericRating > 5 ||
-        !Number.isInteger(numericRating)
+        numericRating > 5
       ) {
         const error = new Error(
           `Note invalide: ${rating}. Doit être entre 1 et 5`,
@@ -344,6 +343,9 @@ export const OrderProvider = ({ children }) => {
         setError("La note doit être un nombre entre 1 et 5");
         return;
       }
+
+      // Arrondir à 0.5 (permet 1, 1.5, 2, 2.5, etc.)
+      const roundedRating = Math.round(numericRating * 2) / 2;
 
       // Validation du commentaire
       if (!comment || typeof comment !== "string") {
@@ -390,7 +392,7 @@ export const OrderProvider = ({ children }) => {
           body: JSON.stringify({
             reviewData: {
               productId,
-              rating: numericRating,
+              rating: roundedRating, // ✅ Utiliser la note arrondie
               comment: trimmedComment,
             },
           }),
