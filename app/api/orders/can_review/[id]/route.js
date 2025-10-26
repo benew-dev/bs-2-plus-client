@@ -85,8 +85,6 @@ export const GET = withIntelligentRateLimit(
         "orderItems.product": id,
       }).lean();
 
-      console.log("Orders Found for this product", orders);
-
       // Vérifier si l'utilisateur a commandé le produit
       const canReview = orders && orders.length > 0;
 

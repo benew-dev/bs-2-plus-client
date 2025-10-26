@@ -247,8 +247,6 @@ export const OrderProvider = ({ children }) => {
         return;
       }
 
-      console.log("Data: ", data);
-
       // Validation de la réponse en cas de succès
       if (!data.success) {
         const error = new Error("Réponse API sans succès malgré status 200");
@@ -449,6 +447,8 @@ export const OrderProvider = ({ children }) => {
         setError(errorMessage);
         return;
       }
+
+      console.log("Data from postReview", data);
 
       // Validation de la réponse en cas de succès
       if (!data.success) {
