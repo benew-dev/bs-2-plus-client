@@ -654,6 +654,8 @@ function ProductDetails({ product, sameCategoryProducts }) {
     return product.stock >= 1;
   }, [product]);
 
+  console.log("Product", product);
+
   // Définir les breadcrumbs une seule fois
   const breadCrumbs = useMemo(() => {
     if (!product) return null;
