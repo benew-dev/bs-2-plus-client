@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import dbConnect from "@/backend/config/dbConnect";
 import Product from "@/backend/models/product";
+import Type from "@/backend/models/type";
 import Category from "@/backend/models/category";
 import { captureException } from "@/monitoring/sentry";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
@@ -41,8 +42,9 @@ export const GET = withIntelligentRateLimit(
       // Récupérer le produit principal
       const product = await Product.findById(id)
         .select(
-          "name description price images category stock sold isActive reviews ratings slug",
+          "name description price images type category stock sold isActive reviews ratings slug",
         )
+        .populate("type", "nom")
         .populate("category", "categoryName")
         .lean();
 

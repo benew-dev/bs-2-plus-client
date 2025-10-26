@@ -660,10 +660,13 @@ function ProductDetails({ product, sameCategoryProducts }) {
 
     return [
       { name: "Accueil", url: "/" },
-      { name: "Produits", url: "/products" },
       {
-        name: product.category?.categoryName || "Catégorie",
-        url: `/category/${product.category?._id || "all"}`,
+        name: `${product?.type?.nom || "/men"}`,
+        url: `/${product?.type?.nom || "/men"}`,
+      },
+      {
+        name: product?.category?.categoryName || "Catégorie",
+        url: `/${product?.type?.nom || "/men"}?category=${product?.category?._id || ""}`,
       },
       {
         name: product.name
