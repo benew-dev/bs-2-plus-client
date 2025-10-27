@@ -120,40 +120,41 @@ const Filters = ({ categories, setLocalLoading }) => {
     isSubmitting,
   ]);
 
-  // ✅ NOUVEAU : Gestionnaire pour le changement de rating
-  const handleRatingChange = useCallback((newRating) => {
-    // Arrondir à 0.5 (permet 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5)
-    const roundedRating = Math.round(newRating * 2) / 2;
-    setRating(roundedRating);
-  }, []);
+  // ✅ MODIFIÉ : Gestionnaire pour le changement de rating avec application automatique
+  const handleRatingChange = useCallback(
+    (newRating) => {
+      if (isSubmitting) return;
 
-  // ✅ NOUVEAU : Gestionnaire pour appliquer le filtre de rating
-  const handleRatingFilter = useCallback(() => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    setLocalLoading(true);
+      // Arrondir à 0.5 (permet 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5)
+      const roundedRating = Math.round(newRating * 2) / 2;
+      setRating(roundedRating);
 
-    try {
-      const params = new URLSearchParams(searchParams?.toString() || "");
+      // Appliquer le filtre automatiquement
+      setIsSubmitting(true);
+      setLocalLoading(true);
 
-      if (rating > 0) {
-        params.set("ratings", rating.toString());
-      } else {
-        params.delete("ratings");
+      try {
+        const params = new URLSearchParams(searchParams?.toString() || "");
+
+        if (roundedRating > 0) {
+          params.set("ratings", roundedRating.toString());
+        } else {
+          params.delete("ratings");
+        }
+
+        const path = `${pathname}?${params.toString()}`;
+        router.push(path);
+      } catch (error) {
+        toast.error("Une erreur est survenue avec le filtre de note");
+      } finally {
+        setIsSubmitting(false);
+        setLocalLoading(false);
       }
+    },
+    [searchParams, router, setLocalLoading, pathname, isSubmitting],
+  );
 
-      const path = `${pathname}?${params.toString()}`;
-      setIsSubmitting(false);
-      setLocalLoading(false);
-      router.push(path);
-    } catch (error) {
-      toast.error("Une erreur est survenue avec le filtre de note");
-      setLocalLoading(false);
-      setIsSubmitting(false);
-    }
-  }, [rating, searchParams, router, setLocalLoading, pathname, isSubmitting]);
-
-  // ✅ NOUVEAU : Reset du rating
+  // ✅ MODIFIÉ : Reset du rating avec application automatique
   const handleResetRating = useCallback(() => {
     setRating(0);
     const params = new URLSearchParams(searchParams?.toString() || "");
@@ -293,14 +294,14 @@ const Filters = ({ categories, setLocalLoading }) => {
             )}
           </div>
 
-          {/* ✅ NOUVEAU : Note (Ratings) */}
+          {/* ✅ MODIFIÉ : Note (Ratings) - Application automatique au clic */}
           <div className="p-4 border border-gray-200 bg-white rounded-lg shadow-sm">
             <h3 className="font-semibold mb-3 text-gray-900">Note minimum</h3>
 
-            <div className="flex flex-col items-center gap-3 mb-3">
+            <div className="flex flex-col items-center gap-3">
               <ReactStarsRating
                 value={rating}
-                isEdit={true}
+                isEdit={!isSubmitting}
                 isHalf={true}
                 primaryColor="#f97316"
                 secondaryColor="#d1d5db"
@@ -326,26 +327,6 @@ const Filters = ({ categories, setLocalLoading }) => {
                 </div>
               )}
             </div>
-
-            <button
-              className={`w-full py-2 px-4 ${
-                isSubmitting || rating === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-sunset hover:shadow-sunset-md hover-lift"
-              } text-white cursor-pointer rounded-md transition-all font-semibold`}
-              onClick={handleRatingFilter}
-              aria-label="Appliquer le filtre de note"
-              disabled={isSubmitting || rating === 0}
-            >
-              {isSubmitting ? (
-                <span className="flex items-center justify-center">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Chargement...
-                </span>
-              ) : (
-                "Appliquer"
-              )}
-            </button>
           </div>
 
           {/* Bouton réinitialiser mobile */}
