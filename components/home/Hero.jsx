@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Shield, ShoppingBag, TrendingUp } from "lucide-react";
 import { CldImage } from "next-cloudinary";
 import { useSwipeable } from "react-swipeable";
 
