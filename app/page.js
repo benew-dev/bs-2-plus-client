@@ -10,7 +10,7 @@ export const metadata = {
  * Récupère les données de la page d'accueil depuis l'API
  * Version optimisée avec cache long (les données changent rarement)
  *
- * @returns {Promise<Object>} Données de la homepage ou valeurs par défaut
+ * @returns {Promise<Object>} Données de la homepage avec sections ou valeurs par défaut
  */
 const getHomePageData = async () => {
   try {
@@ -43,7 +43,9 @@ const getHomePageData = async () => {
       return {
         success: false,
         message: "Erreur lors de la récupération des données",
-        data: null,
+        data: {
+          sections: [],
+        },
       };
     }
 
@@ -56,7 +58,9 @@ const getHomePageData = async () => {
       return {
         success: false,
         message: responseBody.message || "Réponse API invalide",
-        data: null,
+        data: {
+          sections: [],
+        },
       };
     }
 
@@ -65,6 +69,7 @@ const getHomePageData = async () => {
       success: true,
       message: "Données récupérées avec succès",
       data: responseBody.data,
+      meta: responseBody.meta,
     };
   } catch (error) {
     // 7. Gestion des erreurs réseau/timeout
@@ -73,7 +78,9 @@ const getHomePageData = async () => {
       return {
         success: false,
         message: "La requête a pris trop de temps",
-        data: null,
+        data: {
+          sections: [],
+        },
       };
     }
 
@@ -81,7 +88,9 @@ const getHomePageData = async () => {
     return {
       success: false,
       message: "Problème de connexion réseau",
-      data: null,
+      data: {
+        sections: [],
+      },
     };
   }
 };
@@ -89,6 +98,14 @@ const getHomePageData = async () => {
 export default async function Home() {
   // Récupérer les données de la homepage
   const homePageData = await getHomePageData();
+
+  // Log pour le débogage (seulement en développement)
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "HomePage sections count:",
+      homePageData.data?.sections?.length || 0,
+    );
+  }
 
   return (
     <>

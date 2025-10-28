@@ -7,7 +7,7 @@ import { withIntelligentRateLimit } from "@/utils/rateLimit";
 
 /**
  * GET /api/homepage
- * Récupère les données de la page d'accueil
+ * Récupère les données de la page d'accueil avec les 3 sections
  * Rate limit: Configuration intelligente - publicRead (100 req/min) ou authenticatedRead (200 req/min)
  *
  * Headers de sécurité gérés par next.config.mjs pour /api/homepage :
@@ -34,7 +34,7 @@ export const GET = withIntelligentRateLimit(
 
       // Récupérer la page d'accueil (prendre la plus récente)
       const homePage = await HomePage.findOne()
-        .select("title subtitle text image")
+        .select("sections")
         .sort({ createdAt: -1 })
         .lean();
 
@@ -44,29 +44,37 @@ export const GET = withIntelligentRateLimit(
           {
             success: true,
             message: "No homepage configured",
-            data: null,
+            data: {
+              sections: [],
+            },
             meta: {
               timestamp: new Date().toISOString(),
               hasData: false,
+              sectionsCount: 0,
             },
           },
           { status: 200 },
         );
       }
 
-      // Formater la réponse
-      const formattedHomePage = {
-        title: homePage.title,
-        subtitle: homePage.subtitle,
-        text: homePage.text,
+      // Formater les sections
+      const formattedSections = (homePage.sections || []).map((section) => ({
+        title: section.title || "",
+        subtitle: section.subtitle || "",
+        text: section.text || "",
         image: {
-          publicId: homePage.image?.public_id || "",
-          url: homePage.image?.url || "",
+          publicId: section.image?.public_id || "",
+          url: section.image?.url || "",
         },
+      }));
+
+      // Préparer la réponse
+      const responseData = {
+        sections: formattedSections,
       };
 
       // Calculer un hash simple pour l'ETag (optionnel)
-      const dataHash = Buffer.from(JSON.stringify(formattedHomePage))
+      const dataHash = Buffer.from(JSON.stringify(responseData))
         .toString("base64")
         .substring(0, 20);
 
@@ -80,13 +88,14 @@ export const GET = withIntelligentRateLimit(
       return NextResponse.json(
         {
           success: true,
-          data: formattedHomePage,
+          data: responseData,
           meta: {
             timestamp: new Date().toISOString(),
             cached: true,
             cacheMaxAge: 3600,
             etag: dataHash,
             hasData: true,
+            sectionsCount: formattedSections.length,
           },
         },
         {
