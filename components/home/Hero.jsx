@@ -164,42 +164,6 @@ const Hero = ({ homePageData }) => {
                   En savoir plus
                 </Link>
               </div>
-
-              {/* Features Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
-                    <TrendingUp className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <p className="text-xs font-medium text-gray-600">
-                    Prix compétitifs
-                  </p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mb-2">
-                    <Shield className="w-6 h-6 text-pink-600" />
-                  </div>
-                  <p className="text-xs font-medium text-gray-600">
-                    Paiement sécurisé
-                  </p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-2">
-                    <Zap className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <p className="text-xs font-medium text-gray-600">
-                    Livraison rapide
-                  </p>
-                </div>
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
-                    <ShoppingBag className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <p className="text-xs font-medium text-gray-600">
-                    Support 24/7
-                  </p>
-                </div>
-              </div>
             </div>
 
             {/* Image Hero avec transition */}
@@ -229,25 +193,6 @@ const Hero = ({ homePageData }) => {
                       className="w-full h-full object-cover transition-opacity duration-500"
                     />
                   )}
-                </div>
-
-                {/* Badge */}
-                <div className="absolute bottom-6 left-6 right-6 z-20">
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 shadow-md">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-sunset flex items-center justify-center shrink-0">
-                        <ShoppingBag className="w-6 h-6 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-orange-600">
-                          Expérience Premium
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          Shopping de qualité supérieure
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
