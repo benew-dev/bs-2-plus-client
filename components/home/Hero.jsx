@@ -2,20 +2,11 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  ShoppingBag,
-  TrendingUp,
-  Shield,
-  Zap,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ArrowRight, ShoppingBag, TrendingUp, Shield, Zap } from "lucide-react";
 import { CldImage } from "next-cloudinary";
 import { useSwipeable } from "react-swipeable";
 
 const Hero = ({ homePageData }) => {
-  console.log("Data", homePageData);
   // États pour le carrousel
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
@@ -103,16 +94,6 @@ const Hero = ({ homePageData }) => {
     setIsAutoScrolling(false);
   }, []);
 
-  const goToPrevious = useCallback(() => {
-    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : totalSlides - 1));
-    setIsAutoScrolling(false);
-  }, [totalSlides]);
-
-  const goToNext = useCallback(() => {
-    setCurrentSlide((prev) => (prev < totalSlides - 1 ? prev + 1 : 0));
-    setIsAutoScrolling(false);
-  }, [totalSlides]);
-
   // Section actuelle
   const currentSection = sections[currentSlide];
   const hasImage =
@@ -131,8 +112,8 @@ const Hero = ({ homePageData }) => {
         {/* Carrousel avec swipe */}
         <div {...handlers} className="relative">
           <div className="flex flex-col lg:flex-row items-center gap-12">
-            {/* Content */}
-            <div className="flex-1 text-center lg:text-left z-10">
+            {/* Content - Largeur fixe 50% */}
+            <div className="w-full lg:w-1/2 text-center lg:text-left z-10">
               {/* Main Title */}
               <div className="mb-6">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 transition-all duration-500">
@@ -166,8 +147,8 @@ const Hero = ({ homePageData }) => {
               </div>
             </div>
 
-            {/* Image Hero avec transition */}
-            <div className="flex-1 relative z-10">
+            {/* Image Hero avec transition - Largeur fixe 50% */}
+            <div className="w-full lg:w-1/2 relative z-10">
               <div className="relative rounded-2xl overflow-hidden shadow-sunset-lg">
                 {/* Subtle overlay */}
                 <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent z-10"></div>
@@ -197,27 +178,6 @@ const Hero = ({ homePageData }) => {
               </div>
             </div>
           </div>
-
-          {/* Navigation Arrows (visible seulement si plusieurs sections) */}
-          {totalSlides > 1 && (
-            <>
-              <button
-                onClick={goToPrevious}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                aria-label="Section précédente"
-              >
-                <ChevronLeft className="w-6 h-6 text-gray-800" />
-              </button>
-
-              <button
-                onClick={goToNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                aria-label="Section suivante"
-              >
-                <ChevronRight className="w-6 h-6 text-gray-800" />
-              </button>
-            </>
-          )}
         </div>
 
         {/* Dots Navigation (visible seulement si plusieurs sections) */}
@@ -236,15 +196,6 @@ const Hero = ({ homePageData }) => {
                 aria-current={index === currentSlide ? "true" : "false"}
               />
             ))}
-          </div>
-        )}
-
-        {/* Indicateur de section (texte) */}
-        {totalSlides > 1 && (
-          <div className="text-center mt-4 z-10 relative">
-            <p className="text-sm text-gray-500">
-              Section {currentSlide + 1} / {totalSlides}
-            </p>
           </div>
         )}
       </div>
