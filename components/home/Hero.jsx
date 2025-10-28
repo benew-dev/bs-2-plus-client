@@ -116,14 +116,14 @@ const Hero = ({ homePageData }) => {
             <div className="w-full lg:w-1/2 text-center lg:text-left z-10">
               {/* Main Title */}
               <div className="mb-6">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 transition-all duration-500 wrap-break-words hyphens-auto">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 transition-all duration-500 break-words hyphens-auto">
                   {currentSection?.title || "Bienvenue sur Buy It Now"}
                 </h1>
-                <p className="text-xl md:text-2xl text-orange-600 font-semibold mb-2 transition-all duration-500 wrap-break-words hyphens-auto">
+                <p className="text-xl md:text-2xl text-orange-600 font-semibold mb-2 transition-all duration-500 break-words hyphens-auto">
                   {currentSection?.subtitle ||
                     "Votre destination shopping de confiance"}
                 </p>
-                <p className="text-lg text-gray-600 transition-all duration-500 wrap-break-words hyphens-auto">
+                <p className="text-lg text-gray-600 transition-all duration-500 break-words hyphens-auto">
                   {currentSection?.text ||
                     "Découvrez des milliers de produits de qualité"}
                 </p>
