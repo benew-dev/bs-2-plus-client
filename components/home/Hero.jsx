@@ -145,29 +145,30 @@ const Hero = ({ homePageData }) => {
                   En savoir plus
                 </Link>
               </div>
-              {/* Features Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+
+              {/* Features Grid - OPTIMISÉ POUR MOBILE */}
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mt-12">
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
-                    <TrendingUp className="w-6 h-6 text-orange-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center mb-1.5 sm:mb-2">
+                    <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
                   </div>
-                  <p className="text-xs font-medium text-gray-600">
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 leading-tight">
                     Prix compétitifs
                   </p>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mb-2">
-                    <Shield className="w-6 h-6 text-pink-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-pink-100 flex items-center justify-center mb-1.5 sm:mb-2">
+                    <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-pink-600" />
                   </div>
-                  <p className="text-xs font-medium text-gray-600">
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 leading-tight">
                     Paiement sécurisé
                   </p>
                 </div>
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-2">
-                    <ShoppingBag className="w-6 h-6 text-orange-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 flex items-center justify-center mb-1.5 sm:mb-2">
+                    <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
                   </div>
-                  <p className="text-xs font-medium text-gray-600">
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-600 leading-tight">
                     Support 24/7
                   </p>
                 </div>
