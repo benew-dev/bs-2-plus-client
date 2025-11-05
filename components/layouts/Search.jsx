@@ -40,21 +40,24 @@ const Search = ({ setLoading }) => {
 
       if (isSubmitting) return;
       setIsSubmitting(true);
-      setLoading?.(true);
+      setLoading(true);
 
       try {
         if (!keyword || keyword.trim() === "") {
           toast.error("Veuillez entrer un terme de recherche");
-          setLoading?.(false);
+          setLoading(false);
           setIsSubmitting(false);
           return;
         }
+
+        setLoading(false);
+        setIsSubmitting(false);
 
         router.push(
           `${pathname}?keyword=${encodeURIComponent(keyword.trim())}`,
         );
 
-        setLoading?.(false);
+        setLoading(false);
         setIsSubmitting(false);
       } catch (error) {
         if (error.inner && error.inner.length) {
