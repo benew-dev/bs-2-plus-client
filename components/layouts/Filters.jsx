@@ -304,7 +304,7 @@ const Filters = ({ categories, setLocalLoading }) => {
                 isEdit={!isSubmitting}
                 isHalf={true}
                 primaryColor="#f97316"
-                // secondaryColor="#d1d5db"
+                secondaryColor="#d1d5db"
                 className="flex"
                 starGap={6}
                 count={5}
