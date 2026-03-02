@@ -88,6 +88,8 @@ const BlogPage = async ({ searchParams }) => {
 
   const articlesData = await getPublishedArticles(page, 9, tag);
 
+  console.log("Articles ==========> ", articlesData);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
