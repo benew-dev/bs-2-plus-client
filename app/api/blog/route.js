@@ -19,9 +19,9 @@ export async function GET(req) {
       query.tags = tag.toLowerCase();
     }
 
-    // Récupérer les articles
+    // Récupérer les articles (sans populate author)
     const articles = await Article.find(query)
-      .populate("author", "name avatar")
+      .select("-author -content") // Exclure author et content (pas besoin dans la liste)
       .sort({ publishedAt: -1 })
       .skip(skip)
       .limit(limit)

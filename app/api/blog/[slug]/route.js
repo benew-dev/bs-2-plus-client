@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/backend/config/dbConnect";
 import Article from "@/backend/models/article";
+import User from "@/backend/models/user"; // Nécessaire pour le populate
 
 // GET - Récupérer un article par slug (public)
 export async function GET(req, { params }) {
