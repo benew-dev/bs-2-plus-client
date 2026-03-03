@@ -1,4 +1,5 @@
 import Hero from "@/components/home/Hero";
+import HomeContent from "@/components/home/HomeContent";
 
 export const metadata = {
   title: "Buy It Now - Votre boutique en ligne de confiance",
@@ -110,6 +111,7 @@ export default async function Home() {
   return (
     <>
       <Hero homePageData={homePageData.data} />
+      <HomeContent />
     </>
   );
 }
