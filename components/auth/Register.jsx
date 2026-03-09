@@ -5,6 +5,8 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import { CheckCircle, LoaderCircle } from "lucide-react";
 import AuthContext from "@/context/AuthContext";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const Register = () => {
   // Contexte d'authentification
@@ -13,6 +15,8 @@ const Register = () => {
     clearErrors,
     loading: contextLoading,
   } = useContext(AuthContext);
+
+  const router = useRouter();
 
   // États du formulaire
   const [formData, setFormData] = useState({
@@ -61,7 +65,7 @@ const Register = () => {
         errorType = "duplicate_user";
         isCritical = false; // Erreur utilisateur normale
         toast.error(
-          "Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email."
+          "Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.",
         );
       } else if (error.includes("validation")) {
         errorType = "validation_error";
@@ -88,7 +92,7 @@ const Register = () => {
             hasPhone: !!formData.phone,
             emailDomain: formData.email ? formData.email.split("@")[1] : null,
           },
-        }
+        },
       );
 
       clearErrors();
@@ -114,7 +118,7 @@ const Register = () => {
           error,
           "Register",
           "passwordStrengthCalculation",
-          false
+          false,
         );
       }
     }
@@ -154,7 +158,7 @@ const Register = () => {
       const offlineError = new Error("Tentative inscription hors ligne");
       captureClientError(offlineError, "Register", "submit", false);
       toast.warning(
-        "Vous semblez être hors ligne. Veuillez vérifier votre connexion internet."
+        "Vous semblez être hors ligne. Veuillez vérifier votre connexion internet.",
       );
       return;
     }
@@ -182,7 +186,7 @@ const Register = () => {
               password: !formData.password,
               phone: !formData.phone,
             },
-          }
+          },
         );
         toast.error("Tous les champs sont obligatoires");
         setIsSubmitting(false);
@@ -201,28 +205,23 @@ const Register = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // ✅ SUCCÈS: Inscription réussie
-        setRegistrationSuccess(true);
-        setRegistrationData(data.data);
+        toast.success("Inscription réussie ! Connexion en cours…");
 
-        // Réinitialiser le formulaire
-        setFormData({
-          name: "",
-          phone: "",
-          email: "",
-          password: "",
+        const signInResult = await signIn("credentials", {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
         });
-        setPasswordStrength(0);
 
-        // Toast de succès
-        toast.success(data.message || "Inscription réussie !");
-
-        // Log pour développement
-        if (process.env.NODE_ENV === "development") {
-          console.log("Registration successful:", {
-            user: data.data?.user?.email,
-          });
+        if (signInResult?.error) {
+          console.warn("[Register] Auto-login failed:", signInResult.error);
+          toast.info("Inscription réussie. Veuillez vous connecter.");
+          setTimeout(() => router.push("/login"), 1000);
+          return;
         }
+
+        router.refresh();
+        setTimeout(() => router.push("/"), 1000);
       } else {
         // ✅ ERREUR: Gestion des erreurs spécifiques avec monitoring
         let errorType = "generic";
@@ -273,7 +272,7 @@ const Register = () => {
               passwordStrength: passwordStrength,
               nameLength: formData.name ? formData.name.length : 0,
             },
-          }
+          },
         );
       }
     } catch (error) {
