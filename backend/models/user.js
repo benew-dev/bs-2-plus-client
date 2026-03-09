@@ -303,9 +303,7 @@ userSchema.index({ _id: 1, role: 1 });
 userSchema.pre("save", async function (next) {
   try {
     // Si le mot de passe n'a pas été modifié, passer à la suite
-    if (!this.isModified("password")) {
-      return next();
-    }
+    if (!this.isModified("password")) return;
 
     // Enregistrer la date de changement de mot de passe
     this.passwordChangedAt = Date.now() - 1000;
@@ -314,17 +312,18 @@ userSchema.pre("save", async function (next) {
     // En production, on pourrait augmenter à 12 pour plus de sécurité
     const saltRounds = process.env.NODE_ENV === "production" ? 12 : 10;
     this.password = await bcrypt.hash(this.password, saltRounds);
-
-    next();
   } catch (error) {
     logger.error("Error hashing password", {
       userId: this._id,
       error: error.message,
     });
+
     // captureException(error, {
     //   tags: { component: 'user-model', operation: 'password-hashing' },
     // });
-    next(error);
+
+    // Relancer l'erreur pour que Mongoose l'attrape
+    throw error;
   }
 });
 
@@ -332,7 +331,6 @@ userSchema.pre("save", async function (next) {
 userSchema.pre("findOneAndUpdate", function (next) {
   // Définir updatedAt à chaque mise à jour
   this.set({ updatedAt: Date.now() });
-  next();
 });
 
 // Méthode pour comparer le mot de passe
