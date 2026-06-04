@@ -66,19 +66,18 @@ categorySchema.virtual("products", {
   foreignField: "category",
 });
 // Middleware pre-save pour mettre à jour le champ updatedAt
-categorySchema.pre("save", function (next) {
+categorySchema.pre("save", function () {
   this.updatedAt = Date.now();
-  next();
 });
 // Middleware pre-save pour vérifier que le type existe et est actif
-categorySchema.pre("save", async function (next) {
+categorySchema.pre("save", async function () {
   if (this.isModified("type")) {
     const Type = mongoose.model("Type");
     const type = await Type.findById(this.type);
     if (!type) {
       const error = new Error("Le type spécifié n'existe pas");
       error.name = "ValidationError";
-      return next(error);
+      throw error;
     }
 
     if (!type.isActive) {
@@ -86,10 +85,9 @@ categorySchema.pre("save", async function (next) {
         "Impossible d'associer une catégorie à un type inactif",
       );
       error.name = "ValidationError";
-      return next(error);
+      throw error;
     }
   }
-  next();
 });
 // Méthode statique pour récupérer les catégories avec leur type
 categorySchema.statics.findWithType = function (filter = {}) {

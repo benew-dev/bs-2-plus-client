@@ -40,12 +40,11 @@ const typeSchema = new mongoose.Schema(
 // Index pour la recherche textuelle
 typeSchema.index({ nom: "text" });
 // Middleware pre-save pour mettre à jour le champ updatedAt
-typeSchema.pre("save", function (next) {
+typeSchema.pre("save", function () {
   this.updatedAt = Date.now();
-  next();
 });
 // Middleware pre-save pour vérifier la limite de 3 documents
-typeSchema.pre("save", async function (next) {
+typeSchema.pre("save", async function () {
   if (this.isNew) {
     const count = await mongoose.model("Type").countDocuments();
     if (count >= 3) {
@@ -53,10 +52,9 @@ typeSchema.pre("save", async function (next) {
         "Limite atteinte : Vous ne pouvez pas créer plus de 3 types. Veuillez en supprimer un avant d'ajouter un nouveau type.",
       );
       error.name = "ValidationError";
-      return next(error);
+      throw error;
     }
   }
-  next();
 });
 // Méthode statique pour vérifier si on peut ajouter un nouveau type
 typeSchema.statics.canAddNewType = async function () {

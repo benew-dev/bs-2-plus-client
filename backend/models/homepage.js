@@ -51,7 +51,7 @@ const homePageSchema = new mongoose.Schema(
 );
 
 // Middleware pour limiter à 1 seul document HomePage
-homePageSchema.pre("save", async function (next) {
+homePageSchema.pre("save", async function () {
   if (this.isNew) {
     const count = await mongoose.models.HomePage.countDocuments();
     if (count >= 1) {
@@ -60,7 +60,6 @@ homePageSchema.pre("save", async function (next) {
       );
     }
   }
-  next();
 });
 
 export default mongoose.models.HomePage ||

@@ -130,71 +130,64 @@ productSchema.index({ sold: -1, createdAt: -1 });
 productSchema.index({ category: 1, sold: -1 });
 
 // Middleware pre-save pour mettre à jour le champ updatedAt
-productSchema.pre("save", function (next) {
+productSchema.pre("save", function () {
   this.updatedAt = Date.now();
-  next();
 });
 
 // Middleware pour vérifier le stock avant de sauvegarder
-productSchema.pre("save", function (next) {
+productSchema.pre("save", function () {
   if (this.isModified("stock") && this.stock < 0) {
     this.stock = 0;
   }
-  next();
 });
 
 // Middleware pre-save pour vérifier que le type et la catégorie existent et sont actifs
-productSchema.pre("save", async function (next) {
+productSchema.pre("save", async function () {
   if (this.isNew || this.isModified("type") || this.isModified("category")) {
     const Type = mongoose.model("Type");
     const Category = mongoose.model("Category");
 
-    try {
-      // Vérifier le type
-      const type = await Type.findById(this.type);
-      if (!type) {
-        const error = new Error("Le type spécifié n'existe pas");
-        error.name = "ValidationError";
-        return next(error);
-      }
+    // Vérifier le type
+    const type = await Type.findById(this.type);
+    if (!type) {
+      const error = new Error("Le type spécifié n'existe pas");
+      error.name = "ValidationError";
+      throw error;
+    }
 
-      if (!type.isActive) {
-        const error = new Error(
-          "Impossible de créer un produit avec un type inactif",
-        );
-        error.name = "ValidationError";
-        return next(error);
-      }
+    if (!type.isActive) {
+      const error = new Error(
+        "Impossible de créer un produit avec un type inactif",
+      );
+      error.name = "ValidationError";
+      throw error;
+    }
 
-      // Vérifier la catégorie
-      const category = await Category.findById(this.category);
-      if (!category) {
-        const error = new Error("La catégorie spécifiée n'existe pas");
-        error.name = "ValidationError";
-        return next(error);
-      }
+    // Vérifier la catégorie
+    const category = await Category.findById(this.category);
+    if (!category) {
+      const error = new Error("La catégorie spécifiée n'existe pas");
+      error.name = "ValidationError";
+      throw error;
+    }
 
-      if (!category.isActive) {
-        const error = new Error(
-          "Impossible de créer un produit avec une catégorie inactive",
-        );
-        error.name = "ValidationError";
-        return next(error);
-      }
+    if (!category.isActive) {
+      const error = new Error(
+        "Impossible de créer un produit avec une catégorie inactive",
+      );
+      error.name = "ValidationError";
+      throw error;
+    }
 
-      // Vérifier que la catégorie appartient au type
-      if (category.type.toString() !== this.type.toString()) {
-        const error = new Error(
-          "La catégorie sélectionnée n'appartient pas au type choisi",
-        );
-        error.name = "ValidationError";
-        return next(error);
-      }
-    } catch (error) {
-      return next(error);
+    // Vérifier que la catégorie appartient au type
+    if (category.type.toString() !== this.type.toString()) {
+      const error = new Error(
+        "La catégorie sélectionnée n'appartient pas au type choisi",
+      );
+      error.name = "ValidationError";
+      throw error;
     }
   }
-  next();
 });
 
 // Méthode pour vérifier si un produit est en stock
