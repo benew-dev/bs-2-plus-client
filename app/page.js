@@ -65,8 +65,6 @@ const getHomePageData = async () => {
       };
     }
 
-    console.log("Homepage data retrieved successfully:", responseBody.data);
-
     // 6. Retourner les données avec succès
     return {
       success: true,
