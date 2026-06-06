@@ -33,7 +33,7 @@ const getProductsAndCategories = async (searchParams) => {
 
     const searchQuery = new URLSearchParams(cleanParams).toString();
     const apiUrl = `${
-      process.env.API_URL || "https://bs-client-blond.vercel.app"
+      process.env.API_URL || "https://bs-2-plus-client.vercel.app"
     }/api/products?${searchQuery}`;
 
     console.log("Fetching from:", apiUrl);

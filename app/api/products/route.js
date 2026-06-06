@@ -22,6 +22,8 @@ export const GET = withIntelligentRateLimit(
         req.nextUrl.searchParams,
       );
 
+      console.log("Received GET /api/products with params:", sanitizedParams);
+
       const typeRequest = sanitizedParams.type;
       delete sanitizedParams.type;
 
@@ -36,6 +38,8 @@ export const GET = withIntelligentRateLimit(
           { status: 400 },
         );
       }
+
+      console.log("Validated parameters:", validation.data);
 
       const validatedParams = validation.data;
       const searchParams = new URLSearchParams();
@@ -55,11 +59,15 @@ export const GET = withIntelligentRateLimit(
         );
       }
 
+      console.log("Finding type for:", typeRequest);
+
       // 🆕 Trouver le Type en base (par slug)
       const typeDoc = await Type.findOne({
         nom: typeRequest,
         isActive: true,
       });
+
+      console.log("Found type document:", typeDoc);
 
       if (!typeDoc) {
         return NextResponse.json(
@@ -79,6 +87,10 @@ export const GET = withIntelligentRateLimit(
         .select("categoryName _id")
         .sort({ categoryName: 1 })
         .lean();
+
+      console.log(
+        `Found ${categories.length} active categories for type ${typeDoc.nom}`,
+      );
 
       // Formater les catégories
       const formattedCategories = categories.map((cat) => ({
