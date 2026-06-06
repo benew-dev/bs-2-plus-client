@@ -54,7 +54,7 @@ export const parseProductSearchParams = (searchParams, defaultType = null) => {
   const type = searchParams.get("type") || defaultType;
   if (type) {
     // Valider que c'est men ou women
-    if (["Homme", "Femme"].includes(type)) {
+    if (["men", "women"].includes(type)) {
       params.type = type;
     }
   }

@@ -18,11 +18,6 @@ export const GET = withIntelligentRateLimit(
     try {
       await dbConnect();
 
-      console.log(
-        "Received request params:",
-        req.nextUrl.searchParams.toString(),
-      );
-
       const sanitizedParams = parseProductSearchParams(
         req.nextUrl.searchParams,
       );
