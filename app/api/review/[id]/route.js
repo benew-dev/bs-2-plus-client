@@ -6,7 +6,7 @@ import User from "@/backend/models/user";
 import { captureException } from "@/monitoring/sentry";
 import { withIntelligentRateLimit } from "@/utils/rateLimit";
 import { getToken } from "next-auth/jwt";
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 /**
  * PUT /api/review/[id]
@@ -173,9 +173,9 @@ export const PUT = withIntelligentRateLimit(
       }
 
       // Sanitizer le commentaire pour éviter XSS
-      const sanitizedComment = DOMPurify.sanitize(trimmedComment, {
-        ALLOWED_TAGS: [],
-        ALLOWED_ATTR: [],
+      const sanitizedComment = sanitizeHtml(trimmedComment, {
+        allowedTags: [],
+        allowedAttributes: {},
       });
 
       // Vérifier que le commentaire n'est pas vide après sanitisation
